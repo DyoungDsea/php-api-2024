@@ -1,0 +1,14 @@
+RewriteEngine On
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+RewriteRule ^([^\.]+)$ $1.html [NC,L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+
+RewriteRule ^accessCode/ subscription.php?companyAccess=$1 [L,QSA]
+RewriteRule ^start/([a-zA-Z]+)/ clockin.php [L,QSA]
+RewriteRule ^end/([a-zA-Z]+)/ clockout.php[L,QSA] 
+ 
+
+
+

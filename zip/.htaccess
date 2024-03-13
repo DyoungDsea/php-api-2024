@@ -1,0 +1,23 @@
+RewriteEngine On
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+RewriteRule ^([^\.]+)$ $1.html [NC,L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+
+RewriteRule ^staff/([a-zA-Z]+)/\.php$ loginStaff.php?cat=$1 [L,QSA]
+RewriteRule ^start/([a-zA-Z]+)/\.php$ clockin.php [L,QSA]
+RewriteRule ^end/([a-zA-Z]+)/\.php$ clockout.php[L,QSA]
+
+
+RewriteRule ^company/([a-zA-Z]+)/\.php$ loginCompany.php?cat=$1 [L,QSA]
+RewriteRule ^register/([a-zA-Z]+)/\.php$ registerCompany.php?cat=$1 [L,QSA]
+RewriteRule ^stafflist/([a-zA-Z0-9]+)/\.php$ getStaff.php?id=$1 [L,QSA]
+RewriteRule ^planlist/\.php$ getPlan.php [L,QSA]
+
+
+#hugo express
+RewriteRule ^status/([a-zA-Z]+)/\.php$ hugo/status.php?userid=$1 [L,QSA]
+
+
+
