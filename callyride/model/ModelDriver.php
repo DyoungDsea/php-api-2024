@@ -64,7 +64,7 @@ class ModelDriver
             ];
         }
 
-        return $data; // Login failed
+        return $data; 
     }
 
 
@@ -77,18 +77,13 @@ class ModelDriver
             ->where(['email_address' => $email])
             ->get('email_address', false);
 
-
-
         if (empty($userEmail)) {
-
 
             $userPhone =  $this->query->read('manage_drivers')
                 ->where(['phone_number' => $phone])
                 ->get('phone_number', false);
 
             if (empty($userPhone)) {
-
-
 
                 if ($this->helper->create("manage_drivers", $data)) {
                     $user =  $this->query->read('manage_drivers')

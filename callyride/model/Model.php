@@ -9,6 +9,7 @@ class Model
     private $uniqueOrderID;
     private $date;
     private $query;
+    private $helper;
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
@@ -17,6 +18,7 @@ class Model
         $this->uniqueOrderID = CommonFunctions::generateOrderID();
         $this->date = CommonFunctions::geDate('1 hour');
         $this->query = new QueryBuilder($this->connection->getPDO());
+        $this->helper = new Helper($this->connection->getPDO());
     }
 
 
@@ -41,7 +43,7 @@ class Model
                     "emailAddress" => $user["email_address"],
                     "contactAddress" => $user["contact_address"],
                     "avatar" => $user["avatar"],
-                    "dtime" => $user["dtime"],
+                    "dtime" => CommonFunctions::formatDate($user["dtime"]),
                     "walletBalance" => $user["wallet_balance"]
 
                 ];
@@ -64,61 +66,7 @@ class Model
 
         return $data; // Login failed
     }
-
-    public function getUser($userid, $column = "*")
-    {
-        $query = "SELECT $column FROM `dlogin` WHERE userid = :userid";
-        $stmt = $this->pdo->prepare($query);
-        $stmt->bindParam(':userid', $userid);
-        $stmt->execute();
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-
-    function getKey($table, $column)
-    {
-        $stmt = $this->pdo->prepare("SELECT $column FROM $table");
-        $stmt->execute();
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $data[$column];
-    }
-
-    //get All Record
-    public function getAllRecord($tableName, $clause = '')
-    {
-        $query = "SELECT * FROM $tableName";
-        if (!empty($clause)) {
-            $query .= " $clause";
-        }
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function getAllRecordWithSelector($tableName, $selector = "*", $clause = '')
-    {
-        $query = "SELECT $selector FROM $tableName";
-        if (!empty($clause)) {
-            $query .= " $clause";
-        }
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    //get single record from database
-    public function getSingleRecord($tableName, $clause = '')
-    {
-        $query = "SELECT * FROM $tableName";
-        if (!empty($clause)) {
-            $query .= " $clause";
-        }
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
+ 
     public function imagesUpload($fileName, $clause, $tableName, $id = '', $filePath, $x = 400, $y = 400)
     {
 
@@ -171,14 +119,14 @@ class Model
 
 
 
-                if (self::create("manage_customers", $data)) {
+                if ($this->helper->create("manage_customers", $data)) {
                     $user =  $this->query->read('manage_customers')
                         ->where(['email_address' => $email])
                         ->get('id', false);
                     $customer_id = '10000' . $user['id'];
 
 
-                    self::update("manage_customers", ["customer_id" => $customer_id], ["email_address" => $email]);
+                    $this->helper->update("manage_customers", ["customer_id" => $customer_id], ["email_address" => $email]);
 
                     $user = $this->query->read('manage_customers')
                         ->where(['email_address' => $email, "customer_id" => $customer_id])
@@ -226,7 +174,7 @@ class Model
 
         if (!empty($user)) {
 
-            if (self::update("manage_customers", ["pword" => md5($newPass)], ["customer_id" => $userid])) {
+            if ($this->helper->update("manage_customers", ["pword" => md5($newPass)], ["customer_id" => $userid])) {
                 $result = [
                     'ACCESS_CODE' => 'ACCESS',
                     'user' => null,
@@ -245,70 +193,6 @@ class Model
         return $result;
     }
 
-
-    //TODO create new record
-    public function create(string $table, array $values)
-    {
-        // Prepare the query dynamically
-        $columns = implode(', ', array_keys($values));
-        $setClause = implode(', ', array_map(fn ($col) => "$col = :$col", array_keys($values)));
-
-        $sql = "INSERT INTO $table SET $setClause";
-
-        try {
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($values);
-            return true;
-        } catch (PDOException $e) {
-            return false;
-        }
-    }
-
-    //TODO update any table
-    public function update(string $table, array $values, array $clause)
-    {
-
-        // Prepare the query dynamically
-        $setClause = implode(', ', array_map(fn ($col) => "$col = :$col", array_keys($values)));
-
-        $whereClause = '';
-        foreach ($clause as $column => $condition) {
-            $whereClause .= "$column = :$column AND ";
-        }
-        $whereClause = rtrim($whereClause, ' AND ');
-
-        $sql = "UPDATE $table SET $setClause WHERE $whereClause";
-
-        try {
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute(array_merge($values, $clause));
-            return true; // Record updated successfully
-        } catch (PDOException $e) {
-            return false;
-        }
-    }
-
-    //TODO delete from any table
-    public function remove(string $table, array $clause)
-    {
-
-        // Prepare the query dynamically
-        $whereClause = '';
-        foreach ($clause as $column => $condition) {
-            $whereClause .= "$column = :$column AND ";
-        }
-        $whereClause = rtrim($whereClause, ' AND ');
-
-        $sql = "DELETE FROM $table WHERE $whereClause";
-
-        try {
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($clause);
-            return true;
-        } catch (PDOException $e) {
-            return false;
-        }
-    }
 
     public function category(string $distance): array
     {
@@ -349,10 +233,10 @@ class Model
             if (empty($userPhone)) {
 
                 //TODO: update details
-                self::update("manage_customers", $data, $clause);
+                $this->helper->update("manage_customers", $data, $clause);
 
                 $userid = $clause['customer_id'];
-                $user = self::getSingleRecord('manage_customers', "WHERE customer_id = '$userid'");
+                $user = $this->helper->getSingleRecord('manage_customers', "WHERE customer_id = '$userid'");
 
                 if (!empty($user)) {
                     $result = [

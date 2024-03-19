@@ -6,6 +6,14 @@ $jsonData = json_decode(file_get_contents("php://input"));
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
+    //TODO: FORGOT PASSWORD
+    if (isset($jsonData->Message) and $jsonData->Message == 'forgot') {        
+        $email = CommonFunctions::clean($jsonData->email);
+        // $model->
+
+    }
+    
+    
     //TODO: REGISTER
     if (isset($jsonData->Message) and $jsonData->Message == 'register') {
 
