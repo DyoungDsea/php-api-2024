@@ -7,13 +7,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
     //TODO: FORGOT PASSWORD
-    if (isset($jsonData->Message) and $jsonData->Message == 'forgot') {        
+    if (isset($jsonData->Message) and $jsonData->Message == 'forgot') {
         $email = CommonFunctions::clean($jsonData->email);
-        // $model->
-
+        echo json_encode($model->forgotPassword($email));
     }
-    
-    
+
+
     //TODO: REGISTER
     if (isset($jsonData->Message) and $jsonData->Message == 'register') {
 
@@ -47,17 +46,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 //TODO: PUT REQUEST
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
 
+    if (isset($jsonData->Message) and $jsonData->Message == 'resetPassword') {
+        $token1 = CommonFunctions::clean($jsonData->token1);
+        $token2 = CommonFunctions::clean($jsonData->token2);
+        $token3 = CommonFunctions::clean($jsonData->token3);
+        $token4 = CommonFunctions::clean($jsonData->token4);
+        $pass = CommonFunctions::clean($jsonData->pass);
+        $email = CommonFunctions::clean($jsonData->email);
+
+        $token = "$token1$token2$token3$token4";
+
+        echo json_encode($model->resetPassword($email, $token, $pass));
+    }
+
     //TODO: CHANGE PASSWORD
     if (isset($jsonData->Message) and $jsonData->Message == 'changePassword') {
 
         $current = CommonFunctions::clean($jsonData->current);
         $pass = CommonFunctions::clean($jsonData->pass);
         $userid = CommonFunctions::clean($jsonData->userid);
- 
+
         echo json_encode($model->changePassword($userid, $current, $pass));
     }
 
-      //TODO: UPDATE PROFILE
+    //TODO: UPDATE PROFILE
     if (isset($jsonData->Message) and $jsonData->Message == 'updateUser') {
 
         $fullname = CommonFunctions::clean($jsonData->fullname);

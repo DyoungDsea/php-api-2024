@@ -66,39 +66,70 @@ class Model
 
         return $data; // Login failed
     }
- 
-    public function imagesUpload($fileName, $clause, $tableName, $id = '', $filePath, $x = 400, $y = 400)
+
+    public function forgotPassword(string $email)
     {
+        //TODO: Check if email exist
+        $userEmail =  $this->query->read('manage_customers')
+            ->where(['email_address' => $email])
+            ->get('email_address, customer_name', false);
 
-        @list(,, $imtype,) = getimagesize($fileName['tmp_name']);
+        if (!empty($userEmail)) {
+            //TODO: Send security code
+            $rand = rand(1234,5678);
+            $subject = "Reset Password";
+            $name = $userEmail['customer_name'];
+            $mailTemplate = "
+            <b>Dear $name,</b> <br>
+            <p>Use this code <b>$rand</b> to reset your password</p>
+            <p>Kindly ignore this if the request is not from you</p>
+            ";
 
-        if ($imtype == 3 || $imtype == 2 || $imtype == 1) {
-            $picid = $this->unique . $id;
-            $foo = new Upload($fileName);
+            $test = "emailController/mailTemplate.php";
+            include 'emailController/mailTemplateApi.php';
 
-            if ($foo->uploaded) {
-                // Save uploaded image with a new name
-                $foo->file_new_name_body = $picid;
-                $foo->image_resize = true;
-                $foo->image_convert = 'jpg';
-                $foo->image_x = $x;
-                $foo->image_y = $y;
-                $foo->Process($filePath);
-
-                if ($foo->processed) {
-                    $foo->Clean();
-                }
-            }
-
-            // Update the database with the new image information using PDO
-            $query = "UPDATE $tableName SET dimg$id = :picid WHERE $clause";
-            $stmt = $this->pdo->prepare($query);
-            $stmt->bindParam(':picid', $picid);
-
-            if ($stmt->execute()) {
-                // The update was successful
-            }
+            $this->helper->update('manage_customers',["vcode"=>$rand],["email_address"=>$email]);
+            $result = [
+                'ACCESS_CODE' => 'GRANTED',
+                'user' => null,
+                'msg' => "Reset code has been sent to your email."
+            ];
+        }else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'user' => null,
+                'msg' => "Sorry, Email address does not exist."
+            ];
         }
+
+        return $result;
+    }
+    public function resetPassword(string $email, string $token, string $pass)
+    {
+        //TODO: Check if email exist
+        $userEmail =  $this->query->read('manage_customers')
+            ->where(['email_address' => $email,'vcode'=>$token])
+            ->get('email_address, customer_name', false);
+
+        if (!empty($userEmail)) {
+             
+            $this->helper->update('manage_customers',["pword"=>md5($pass)],["email_address"=>$email]);
+            $result = [
+                'ACCESS_CODE' => 'GRANTED',
+                'user' => null,
+                'msg' => "Reset successfully."
+            ];
+        }else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'user' => null,
+                'msg' => "Sorry, Email address does not exist."
+            ];
+        }
+
+        return $result;
     }
 
     //? new registration
