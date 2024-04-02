@@ -41,10 +41,12 @@ class ModelDriver
                     "driverName" => $user["driver_name"],
                     "phoneNumber" => $user["phone_number"],
                     "emailAddress" => $user["email_address"],
-                    "contactAddress" => $user["daddress"],
-                    "licenseNumber" => $user["license_number"],
-                    "lastupdate" => $user["lastupdate"],
-                    "walletBalance" => $user["wallet_balance"]
+                    "contactAddress" => empty($user["daddress"]) ? "" : $user["daddress"],
+                    "licenseNumber" => empty($user["licenseNumber"]) ? "" : $user["licenseNumber"],
+                    "frontView" => empty($user["frontView"]) ? "" : $user["frontView"],
+                    "lastupdate" => empty($user["lastupdate"]) ? "" : $user["lastupdate"],
+                    "walletBalance" => $user["wallet_balance"],
+                    "carVerification" => $user["carVerification"]
 
                 ];
             } else {
@@ -64,7 +66,7 @@ class ModelDriver
             ];
         }
 
-        return $data; 
+        return $data;
     }
 
 
@@ -102,10 +104,12 @@ class ModelDriver
                         "driverName" => $user["driver_name"],
                         "phoneNumber" => $user["phone_number"],
                         "emailAddress" => $user["email_address"],
-                        "contactAddress" => $user["daddress"],
-                        "licenseNumber" => $user["license_number"],
-                        "lastupdate" => $user["lastupdate"],
-                        "walletBalance" => $user["wallet_balance"]
+                        "contactAddress" => empty($user["daddress"]) ? "" : $user["daddress"],
+                        "licenseNumber" => empty($user["licenseNumber"]) ? "" : $user["licenseNumber"],
+                        "frontView" => empty($user["frontView"]) ? "" : $user["frontView"],
+                        "lastupdate" => empty($user["lastupdate"]) ? "" : $user["lastupdate"],
+                        "walletBalance" => $user["wallet_balance"],
+                        "carVerification" => $user["carVerification"]
 
                     ];
                 }
@@ -159,7 +163,32 @@ class ModelDriver
         return $result;
     }
 
+    public function resetPassword(string $email, string $token, string $pass)
+    {
+        //TODO: Check if email exist
+        $userEmail =  $this->query->read('manage_drivers')
+            ->where(['email_address' => $email, 'vcode' => $token])
+            ->get('email_address, driver_name', false);
 
+        if (!empty($userEmail)) {
+
+            $this->helper->update('manage_drivers', ["password" => md5($pass)], ["email_address" => $email]);
+            $result = [
+                'ACCESS_CODE' => 'GRANTED',
+                'user' => null,
+                'msg' => "Reset successfully."
+            ];
+        } else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'user' => null,
+                'msg' => "Sorry, invalid token submitted."
+            ];
+        }
+
+        return $result;
+    }
 
     public function category(string $distance): array
     {
@@ -176,6 +205,53 @@ class ModelDriver
             ];
         }
         return $res;
+    }
+    public function getDetails(string $id)
+    {
+        $user =  $this->query->read("manage_drivers")
+            ->where(['driver_id' => $id])
+            ->get("licenseNumber, driverLicenceFront, frontView, engineView", false);
+
+        $result = [
+            "licenseNumber" => !empty($user["licenseNumber"]) ? $user["licenseNumber"] : "",
+            "driverLicenceFront" => !empty($user["driverLicenceFront"]) ? $user["driverLicenceFront"] : "",
+            "frontView" => !empty($user["frontView"]) ? $user["frontView"] : "",
+            "engineView" => !empty($user["engineView"]) ? $user["engineView"] : ""
+        ];
+
+        return $result;
+    }
+    public function viewDetails(string $id)
+    {
+        $user =  $this->query->read("manage_drivers")
+            ->where(['driver_id' => $id])
+            ->get("licenseNumber, nin, plateNunmber, engineNumber, carColor, carDesc ", false);
+
+        $result = [
+            "licenseNumber" => !empty($user["licenseNumber"]) ? $user["licenseNumber"] : "",
+            "nin" => !empty($user["nin"]) ? $user["nin"] : "",
+            "plateNunmber" => !empty($user["plateNunmber"]) ? $user["plateNunmber"] : "",
+            "engineNumber" => !empty($user["engineNumber"]) ? $user["engineNumber"] : "",
+            "carColor" => !empty($user["carColor"]) ? $user["carColor"] : "",
+            "carDesc" => !empty($user["carDesc"]) ? $user["carDesc"] : ""
+        ];
+
+        return $result;
+    }
+
+    public function viewLicense(string $id)
+    {
+        $user =  $this->query->read("manage_drivers")
+            ->where(['driver_id' => $id])
+            ->get("driverLicenceFront, driverLicenceBack, driver_photo", false);
+
+        $result = [
+            "driverLicenceFront" => !empty($user["driverLicenceFront"]) ? $user["driverLicenceFront"] : "",
+            "driverLicenceBack" => !empty($user["driverLicenceBack"]) ? $user["driverLicenceBack"] : "",
+            "driver_photo" => !empty($user["driver_photo"]) ? $user["driver_photo"] : "", 
+        ];
+
+        return $result;
     }
 
     public function updateDriver(array $data, array $clause)
@@ -211,10 +287,12 @@ class ModelDriver
                         "driverName" => $user["driver_name"],
                         "phoneNumber" => $user["phone_number"],
                         "emailAddress" => $user["email_address"],
-                        "contactAddress" => $user["daddress"],
-                        "licenseNumber" => $user["license_number"],
-                        "lastupdate" => $user["lastupdate"],
-                        "walletBalance" => $user["wallet_balance"]
+                        "contactAddress" => empty($user["daddress"]) ? "" : $user["daddress"],
+                        "licenseNumber" => empty($user["licenseNumber"]) ? "" : $user["licenseNumber"],
+                        "frontView" => empty($user["frontView"]) ? "" : $user["frontView"],
+                        "lastupdate" => empty($user["lastupdate"]) ? "" : $user["lastupdate"],
+                        "walletBalance" => $user["wallet_balance"],
+                        "carVerification" => $user["carVerification"]
 
                     ];
                 }
@@ -232,6 +310,39 @@ class ModelDriver
                 'ACCESS_CODE' => 'DENIED',
                 'user' => null,
                 'msg' => "Sorry, Email address already taken."
+            ];
+        }
+        return $result;
+    }
+
+    public function  updateVehicleInfo(array $data, array $clause)
+    {
+
+        if ($this->helper->update("manage_drivers", $data, $clause)) {
+
+            $userid = $clause['driver_id'];
+            $user = $this->helper->getSingleRecord('manage_drivers', "WHERE driver_id = '$userid'");
+
+            if (!empty($user)) {
+                $result = [
+                    "driverId" => $user["driver_id"],
+                    "driverName" => $user["driver_name"],
+                    "phoneNumber" => $user["phone_number"],
+                    "emailAddress" => $user["email_address"],
+                    "contactAddress" => empty($user["daddress"]) ? "" : $user["daddress"],
+                    "licenseNumber" => empty($user["licenseNumber"]) ? "" : $user["licenseNumber"],
+                    "frontView" => empty($user["frontView"]) ? "" : $user["frontView"],
+                    "lastupdate" => empty($user["lastupdate"]) ? "" : $user["lastupdate"],
+                    "walletBalance" => $user["wallet_balance"],
+                    "carVerification" => $user["carVerification"]
+
+                ];
+            }
+        } else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "Sorry, Something wrong occur, try again later."
             ];
         }
         return $result;

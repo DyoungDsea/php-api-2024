@@ -19,5 +19,6 @@ include_once './model/Helper.php';
 $connection = new Connection();
 $model = new Model($connection);
 $modelDriver = new ModelDriver($connection);
+$helper = new Helper($connection->getPDO());
 
  

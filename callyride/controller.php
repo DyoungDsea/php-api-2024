@@ -28,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "customer_name" => $name,
             "phone_number" => $phone,
             "email_address" => $email,
+            "dtime" => CommonFunctions::getDateTime(1),
             "pword" => md5($pass)
         ];
 

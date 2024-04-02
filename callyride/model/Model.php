@@ -109,7 +109,7 @@ class Model
     {
         //TODO: Check if email exist
         $userEmail =  $this->query->read('manage_customers')
-            ->where(['email_address' => $email,'vcode'=>$token])
+            ->where(['email_address' => $email, 'vcode'=>$token])
             ->get('email_address, customer_name', false);
 
         if (!empty($userEmail)) {
@@ -125,7 +125,7 @@ class Model
             $result = [
                 'ACCESS_CODE' => 'DENIED',
                 'user' => null,
-                'msg' => "Sorry, Email address does not exist."
+                'msg' => "Sorry, invalid token submitted."
             ];
         }
 

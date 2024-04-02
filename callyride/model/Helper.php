@@ -71,7 +71,7 @@ class Helper
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function imagesUpload($fileName, $clause, $tableName, $id = '', $filePath, $x = 400, $y = 400)
+    public function imagesUpload($fileName, $id = '', $x = 400, $y = 400)
     {
 
         @list(,, $imtype,) = getimagesize($fileName['tmp_name']);
@@ -87,21 +87,14 @@ class Helper
                 $foo->image_convert = 'jpg';
                 $foo->image_x = $x;
                 $foo->image_y = $y;
-                $foo->Process($filePath);
+                $foo->Process('files');
 
                 if ($foo->processed) {
                     $foo->Clean();
                 }
             }
 
-            // Update the database with the new image information using PDO
-            $query = "UPDATE $tableName SET dimg$id = :picid WHERE $clause";
-            $stmt = $this->pdo->prepare($query);
-            $stmt->bindParam(':picid', $picid);
-
-            if ($stmt->execute()) {
-                // The update was successful
-            }
+            return $picid.'.jpg';
         }
     }
 
