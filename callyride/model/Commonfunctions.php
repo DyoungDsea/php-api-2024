@@ -44,6 +44,15 @@ class CommonFunctions
         return date("d M, Y", strtotime($data));
     }
 
+    public static function formatDated($data)
+    {
+        return date("D d M, Y", strtotime($data));
+    }
+    public static function formatTime($data)
+    {
+        return date("H:i", strtotime($data));
+    }
+
 
     public static function generateOrderID()
     {

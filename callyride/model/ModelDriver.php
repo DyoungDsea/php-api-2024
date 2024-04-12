@@ -233,7 +233,7 @@ class ModelDriver
             "plateNunmber" => !empty($user["plateNunmber"]) ? $user["plateNunmber"] : "",
             "engineNumber" => !empty($user["engineNumber"]) ? $user["engineNumber"] : "",
             "carColor" => !empty($user["carColor"]) ? $user["carColor"] : "",
-            "carDesc" => !empty($user["carDesc"]) ? $user["carDesc"] : ""
+            "carDesc" => !empty($user["carDesc"]) ? html_entity_decode($user["carDesc"]) : ""
         ];
 
         return $result;
@@ -248,7 +248,24 @@ class ModelDriver
         $result = [
             "driverLicenceFront" => !empty($user["driverLicenceFront"]) ? $user["driverLicenceFront"] : "",
             "driverLicenceBack" => !empty($user["driverLicenceBack"]) ? $user["driverLicenceBack"] : "",
-            "driver_photo" => !empty($user["driver_photo"]) ? $user["driver_photo"] : "", 
+            "driver_photo" => !empty($user["driver_photo"]) ? $user["driver_photo"] : "",
+        ];
+
+        return $result;
+    }
+
+    public function viewCarPicture(string $id)
+    {
+        $user =  $this->query->read("manage_drivers")
+            ->where(['driver_id' => $id])
+            ->get("frontView, backView, engineView, insideFront, insideBack", false);
+
+        $result = [
+            "frontView" => !empty($user["frontView"]) ? $user["frontView"] : "",
+            "backView" => !empty($user["backView"]) ? $user["backView"] : "",
+            "engineView" => !empty($user["engineView"]) ? $user["engineView"] : "",
+            "insideFront" => !empty($user["insideFront"]) ? $user["insideFront"] : "",
+            "insideBack" => !empty($user["insideBack"]) ? $user["insideBack"] : "",
         ];
 
         return $result;
@@ -345,6 +362,68 @@ class ModelDriver
                 'msg' => "Sorry, Something wrong occur, try again later."
             ];
         }
+        return $result;
+    }
+
+    public function fetchJobDone(string $id)
+    {
+        $jobs =  $this->query->read("manage_bookings")
+            ->where(['driver_id' => $id])
+            ->orderBy('id DESC')
+            ->get();
+        $result = [];
+        foreach ($jobs as $job) {
+            $result[] = [
+                "customerName" => $job["customer_name"],
+                "customerPhone" => $job["phone_number"],
+                "customerAddress" => $job["email_address"],
+                "pickupAddress" => $job["pickup_address"],
+                "dropoffAddress" => $job["dropoff_address"],
+                "pickupLat" => $job["pickup_lat"],
+                "pickupLong" => $job["pickup_long"],
+                "dropoffLat" => $job["dropoff_lat"],
+                "dropoffLong" => $job["dropoff_long"],
+                "driverName" => $job["driver_name"],
+                "cost" => $job["dtotal"],
+                "status" => $job["status"],
+                "dateCreated" => CommonFunctions::formatDated($job["date_created"]),
+                "timeCreated" => CommonFunctions::formatTime($job["date_created"]),
+            ];
+        }
+        // print_r($job);
+
+
+        return $result;
+    }
+
+    public function fetchAvalaibleJob()
+    {
+        $jobs =  $this->query->read("manage_bookings")
+        ->orderBy('id DESC')
+            ->limit(3)
+            ->get();
+        $result = [];
+        foreach ($jobs as $job) {
+            $result[] = [
+                "customerName" => $job["customer_name"],
+                "customerPhone" => $job["phone_number"],
+                "customerAddress" => $job["email_address"],
+                "pickupAddress" => $job["pickup_address"],
+                "dropoffAddress" => $job["dropoff_address"],
+                "pickupLat" => $job["pickup_lat"],
+                "pickupLong" => $job["pickup_long"],
+                "dropoffLat" => $job["dropoff_lat"],
+                "dropoffLong" => $job["dropoff_long"],
+                "driverName" => $job["driver_name"],
+                "cost" => CommonFunctions::withNaira($job["dtotal"]),
+                "status" => $job["status"],
+                "dateCreated" => CommonFunctions::formatDated($job["date_created"]),
+                "timeCreated" => CommonFunctions::formatTime($job["date_created"]),
+            ];
+        }
+        // print_r($job);
+
+
         return $result;
     }
 }

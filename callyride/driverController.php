@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     }
 
     //TODO: UPDATE PROFILE
-    if (isset($jsonData->Message) AND $jsonData->Message == 'updateUser') {
+    if (isset($jsonData->Message) AND $jsonData->Message == 'updateDriver') {
 
         $fullname = CommonFunctions::clean($jsonData->fullname);
         $phone = CommonFunctions::clean($jsonData->phone);
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $userid = CommonFunctions::clean($jsonData->userid);
 
         $data = [
-            "customer_name" => $fullname,
+            "driver_name" => $fullname,
             "phone_number" => $phone,
             "email_address" => $email
         ];

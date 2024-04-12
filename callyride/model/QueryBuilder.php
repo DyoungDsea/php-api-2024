@@ -9,7 +9,9 @@ class QueryBuilder
     protected array $not = [];
     protected string $groupBy = '';
     protected string $orderBy = '';
-    protected string $select = '*';
+    protected string $select = '*';    
+    private string $offset;
+    private string $limit;
 
     public function __construct(PDO $pdo)
     {
@@ -48,6 +50,18 @@ class QueryBuilder
     public function orderBy(string $orderBy)
     {
         $this->orderBy = $orderBy;
+        return $this;
+    }
+
+    public function offset($offset)
+    {
+        $this->offset = $offset;
+        return $this;
+    }
+
+    public function limit($limit)
+    {
+        $this->limit = $limit;
         return $this;
     }
 
@@ -103,7 +117,15 @@ class QueryBuilder
             $query .= " ORDER BY {$this->orderBy}";
         }
 
-       
+        if (!empty($this->limit)) {
+            $query .= " LIMIT";
+
+            if (!empty($this->offset)) {
+                $query .= " {$this->offset},";
+            }
+
+            $query .= " {$this->limit}";
+        }
 
         $stmt = $this->pdo->prepare($query);
 
