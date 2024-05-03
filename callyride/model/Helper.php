@@ -94,7 +94,7 @@ class Helper
                 }
             }
 
-            return $picid.'.jpg';
+            return $picid . '.jpg';
         }
     }
 
@@ -161,5 +161,57 @@ class Helper
         } catch (PDOException $e) {
             return false;
         }
+    }
+
+
+    public  function getClosestDriver($lat, $lon, $distance)
+    {
+
+        // Haversine formula SQL query to find the closest driver
+        $sql = "SELECT driver_id, driver_name, phone_number, driver_latitude, driver_longitude, car_type, driver_photo, plateNumber, car_category,  (6371 * acos(cos(radians(:lat)) * cos(radians(driver_latitude)) * cos(radians(driver_longitude) - radians(:lon)) + sin(radians(:lat)) *  sin(radians(driver_latitude)))) AS distance FROM manage_drivers WHERE availability='Free' ORDER BY distance ASC LIMIT 1";
+        // $sql = "SELECT driver_id, driver_name, phone_number, driver_latitude, driver_longitude, car_type, driver_photo, plateNumber, car_category,  (6371 * acos(cos(radians(:lat)) * cos(radians(driver_latitude)) * cos(radians(driver_longitude) - radians(:lon)) + sin(radians(:lat)) *  sin(radians(driver_latitude)))) AS distance FROM manage_drivers WHERE availability='Free' HAVING distance <= :distance ORDER BY distance ASC LIMIT 1";
+
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':lat', $lat);
+        $stmt->bindParam(':lon', $lon);
+        // $stmt->bindParam(':distance', $distance);
+        $stmt->execute();
+
+        $driver = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $driver;
+    }
+
+
+    public function haversineDistance($lat1, $lon1, $lat2, $lon2)
+    {
+        $earthRadius = 6371; // Radius of the Earth in kilometers
+
+        // Convert latitude and longitude from degrees to radians
+        $lat1Rad = deg2rad($lat1);
+        $lon1Rad = deg2rad($lon1);
+        $lat2Rad = deg2rad($lat2);
+        $lon2Rad = deg2rad($lon2);
+
+        // Calculate the differences between the latitudes and longitudes
+        $latDiff = $lat2Rad - $lat1Rad;
+        $lonDiff = $lon2Rad - $lon1Rad;
+
+        // Calculate the Haversine distance
+        $a = sin($latDiff / 2) * sin($latDiff / 2) + cos($lat1Rad) * cos($lat2Rad) * sin($lonDiff / 2) * sin($lonDiff / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        $distance = $earthRadius * $c; // Distance in kilometers
+
+        return $distance;
+    }
+
+
+    public  function calculateDrivingTime($distanceKm, $averageSpeedKph)
+    {
+        $timeHours = $distanceKm / $averageSpeedKph;
+        $timeMinutes = $timeHours * 60;
+
+        return $timeMinutes;
     }
 }

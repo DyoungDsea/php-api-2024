@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
     //TODO: REGISTER
-    if (isset($jsonData->Message) AND $jsonData->Message == 'register') {
+    if (isset($jsonData->Message) and $jsonData->Message == 'register') {
 
         $fname = CommonFunctions::clean($jsonData->fname);
         $lname = CommonFunctions::clean($jsonData->lname);
@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     //TODO: lOGIN
-    if (isset($jsonData->Message) AND $jsonData->Message == 'login') {
+    if (isset($jsonData->Message) and $jsonData->Message == 'login') {
         $user = CommonFunctions::clean($jsonData->user);
         $pass = CommonFunctions::clean($jsonData->pass);
         echo json_encode($modelDriver->login($user, $pass));
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
 
     //TODO: RESET PASSWORD
-    if (isset($jsonData->Message) AND $jsonData->Message == 'resetPassword') {
+    if (isset($jsonData->Message) and $jsonData->Message == 'resetPassword') {
         $token1 = CommonFunctions::clean($jsonData->token1);
         $token2 = CommonFunctions::clean($jsonData->token2);
         $token3 = CommonFunctions::clean($jsonData->token3);
@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
 
 
     //TODO: CHANGE PASSWORD
-    if (isset($jsonData->Message) AND $jsonData->Message == 'changePassword') {
+    if (isset($jsonData->Message) and $jsonData->Message == 'changePassword') {
 
         $current = CommonFunctions::clean($jsonData->current);
         $pass = CommonFunctions::clean($jsonData->pass);
@@ -62,8 +62,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         echo json_encode($modelDriver->changePassword($userid, $current, $pass));
     }
 
+    //TODO: CHANGE PASSWORD
+    if (isset($jsonData->Message) and $jsonData->Message == 'driverLatLong') {
+
+        $lat = CommonFunctions::clean($jsonData->lat);
+        $long = CommonFunctions::clean($jsonData->long);
+        $userid = CommonFunctions::clean($jsonData->userid);
+        $data = [
+            "driver_latitude" => $lat,
+            "driver_longitude" => $long
+        ];
+
+        echo json_encode($modelDriver->driverLatLong($data, ["driver_id" => $userid]));
+    }
+
     //TODO: UPDATE PROFILE
-    if (isset($jsonData->Message) AND $jsonData->Message == 'updateDriver') {
+    if (isset($jsonData->Message) and $jsonData->Message == 'updateDriver') {
 
         $fullname = CommonFunctions::clean($jsonData->fullname);
         $phone = CommonFunctions::clean($jsonData->phone);
@@ -80,14 +94,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     }
 
     //TODO: UPDATE VEHICLE DETAILS
-    if (isset($jsonData->Message) AND $jsonData->Message == 'vehicleDetails') {
+    if (isset($jsonData->Message) and $jsonData->Message == 'vehicleDetails') {
 
         $license = CommonFunctions::clean($jsonData->license);
         $nin = CommonFunctions::clean($jsonData->nin);
         $plateNo = CommonFunctions::clean($jsonData->plateNo);
         $color = CommonFunctions::clean($jsonData->color);
         $enginNo = CommonFunctions::clean($jsonData->enginNo);
-        $desc = CommonFunctions::clean($jsonData->desc);
+        $desc = htmlentities($jsonData->desc);
         $userid = CommonFunctions::clean($jsonData->userid);
 
         $data = [
@@ -102,4 +116,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         echo json_encode($modelDriver->updateVehicleInfo($data, ["driver_id" => $userid]));
     }
 }
-

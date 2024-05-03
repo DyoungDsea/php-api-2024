@@ -16,7 +16,7 @@ class Model
         $this->pdo = $this->connection->getPDO();
         $this->unique = CommonFunctions::generateUniqueID();
         $this->uniqueOrderID = CommonFunctions::generateOrderID();
-        $this->date = CommonFunctions::geDate('1 hour');
+        $this->date = CommonFunctions::getDate('1 hour');
         $this->query = new QueryBuilder($this->connection->getPDO());
         $this->helper = new Helper($this->connection->getPDO());
     }
@@ -76,7 +76,7 @@ class Model
 
         if (!empty($userEmail)) {
             //TODO: Send security code
-            $rand = rand(1234,5678);
+            $rand = rand(1234, 5678);
             $subject = "Reset Password";
             $name = $userEmail['customer_name'];
             $mailTemplate = "
@@ -88,13 +88,13 @@ class Model
             $test = "emailController/mailTemplate.php";
             include 'emailController/mailTemplateApi.php';
 
-            $this->helper->update('manage_customers',["vcode"=>$rand],["email_address"=>$email]);
+            $this->helper->update('manage_customers', ["vcode" => $rand], ["email_address" => $email]);
             $result = [
                 'ACCESS_CODE' => 'GRANTED',
                 'user' => null,
                 'msg' => "Reset code has been sent to your email."
             ];
-        }else {
+        } else {
             http_response_code(400);
             $result = [
                 'ACCESS_CODE' => 'DENIED',
@@ -109,18 +109,18 @@ class Model
     {
         //TODO: Check if email exist
         $userEmail =  $this->query->read('manage_customers')
-            ->where(['email_address' => $email, 'vcode'=>$token])
+            ->where(['email_address' => $email, 'vcode' => $token])
             ->get('email_address, customer_name', false);
 
         if (!empty($userEmail)) {
-             
-            $this->helper->update('manage_customers',["pword"=>md5($pass)],["email_address"=>$email]);
+
+            $this->helper->update('manage_customers', ["pword" => md5($pass)], ["email_address" => $email]);
             $result = [
                 'ACCESS_CODE' => 'GRANTED',
                 'user' => null,
                 'msg' => "Reset successfully."
             ];
-        }else {
+        } else {
             http_response_code(400);
             $result = [
                 'ACCESS_CODE' => 'DENIED',
@@ -237,6 +237,7 @@ class Model
             $res[] = [
                 "category" => $row['dcategory'],
                 "fare" => CommonFunctions::withNaira($finalTotal),
+                "cost" => "$finalTotal",
             ];
         }
         return $res;
@@ -297,6 +298,205 @@ class Model
                 'msg' => "Sorry, Email address already taken."
             ];
         }
+        return $result;
+    }
+
+    public function booking(array $data, string $transid)
+    {
+        if ($this->helper->create("manage_bookings", $data)) {
+            $result = [
+                'ACCESS_CODE' => 'GRANDED',
+                "transid"=> "$transid",
+                'msg' => "Well done!"
+            ];
+        } else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "Sorry, something went wrong."
+            ];
+        }
+
+        return $result;
+    }
+
+
+    public function cancelBooking(array $data, array $clause)
+    {
+        //TODO: GET LAST BOOKING
+        $user =  $this->query->read('manage_bookings')
+            ->where($clause)
+            ->orderBy("id DESC")
+            ->limit(1)
+            ->get('transid', false);
+
+        if (!empty($user)) {
+            $transid = $user['transid'];
+            $merge = array_merge($clause, ["transid" => $transid]);
+            if ($this->helper->update("manage_bookings", $data, $merge)) {
+                $result = [
+                    'ACCESS_CODE' => 'GRANDED',
+                    'msg' => "Well done!"
+                ];
+            } else {
+                http_response_code(400);
+                $result = [
+                    'ACCESS_CODE' => 'DENIED',
+                    'msg' => "Sorry, something went wrong."
+                ];
+            }
+        } else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "Sorry, something went wrong."
+            ];
+        }
+
+
+        return $result;
+    }
+
+    public function assignDriver($clause)
+    {
+        //TODO: GET LAST BOOKING
+        $user =  $this->query->read('manage_bookings')
+            ->where($clause)
+            ->orderBy("id DESC")
+            ->limit(1)
+            ->get('id, driver_id, pickup_long, pickup_lat, driver_status', false);
+        if (!empty($user)) {
+            $lat = $user['pickup_lat'];
+            $long = $user['pickup_long'];
+            $id = $user['id'];
+            $driver_id = $user['driver_id'];
+
+            if (empty($user['driver_id'])) {
+
+                //TODO: FIND DRIVER
+                $driver = $this->helper->getClosestDriver($lat, $long, 30);
+                if (!empty($driver)) {
+                    $result = [
+                        'ACCESS_CODE' => 'GRANTED',
+                        'msg' => "Successful"
+                    ];
+
+                    //TODO: UPDATE DRIVER DETAILS ON BOOKING TABLE
+                    $data = [
+                        "driver_id" => $driver['driver_id'],
+                        "driver_name" => $driver['driver_name'],
+                        "phone_number" => $driver['phone_number'],
+                        "car_type" => $driver['car_type'],
+                        "car_category" => $driver['car_category'],
+                        "driver_photo" => $driver['driver_photo'],
+                        "plateNumber" => $driver['plateNumber'],
+                    ];
+
+                    $this->helper->update("manage_bookings", $data, ['id' => $id]);
+                    $result = [
+                        'ACCESS_CODE' => 'GRANTED',
+                        'msg' => "Successful"
+                    ];
+                } else {
+                    $result = [
+                        'ACCESS_CODE' => 'DENIED',
+                        'msg' => "Driver unavailable"
+                    ];
+                }
+            } else {
+                //TODO: MEANING DRIVER HAS BEEN ASSIGNED
+                $result = [
+                    'ACCESS_CODE' => 'GRANTED',
+                    'msg' => "Successful"
+                ];
+            }
+        } else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "Sorry, record not found."
+            ];
+        }
+
+        return $result;
+    }
+
+    public function getDriverResponse($clause)
+    {
+        //TODO: GET LAST BOOKING
+        $booking =  $this->query->read('manage_bookings')
+            ->where($clause)
+            ->orderBy("id DESC")
+            ->limit(1)
+            ->get('id, driver_id, driver_name, driver_status, phone_number, car_type, car_category, driver_photo, plateNumber, pickup_lat, pickup_long ', false);
+        if (!empty($booking)) {
+            $driverid = $booking['driver_id'];
+            $driverLatLng = $this->helper->getSingleRecord("manage_drivers", " WHERE driver_id='$driverid'");
+            $lat = $driverLatLng['driver_latitude'];
+            $lng = $driverLatLng['driver_longitude'];
+
+            $userLat =  $booking['pickup_lat'];
+            $userLng =  $booking['pickup_long'];
+
+            //TODO: GET DISTANCE IN MINUTES
+            $distance = $this->helper->haversineDistance($userLat, $userLng, $lat, $lng);
+            $getMinutes = round($this->helper->calculateDrivingTime($distance, 60));
+            $bookingID = $booking['id'];
+            $result = [
+                "id" => "$bookingID",
+                "driverid" => $driverid,
+                "driverName" => $booking['driver_name'],
+                "driverPhone" => $booking['phone_number'],
+                "carName" => $booking['car_type'],
+                "carCategory" => $booking['car_category'],
+                "driverStatus" => $booking['driver_status'],
+                "getMinutes" => $getMinutes == 0 ? "1" : "$getMinutes",
+                "photo" => $booking['driver_photo'],
+                "plateNumber" => $booking['plateNumber'],
+                "latitude" => $lat,
+                "longitude" => $lng,
+            ];
+        } else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "Searching for driver"
+            ];
+        }
+
+        return $result;
+    }
+
+
+    public function fetchUserJobDone(string $id)
+    {
+        $jobs =  $this->query->read("manage_bookings")
+            ->where(['customer_id' => $id])
+            ->orderBy('id DESC')
+            ->limit(10)
+            ->get();
+        $result = [];
+        foreach ($jobs as $job) {
+            $result[] = [
+                "customerName" => $job["customer_name"],
+                "customerPhone" => $job["phone_number"],
+                "customerAddress" => $job["email_address"],
+                "pickupAddress" => $job["pickup_address"],
+                "dropoffAddress" => $job["dropoff_address"],
+                "pickupLat" => $job["pickup_lat"],
+                "pickupLong" => $job["pickup_long"],
+                "dropoffLat" => $job["dropoff_lat"],
+                "dropoffLong" => $job["dropoff_long"],
+                "driverName" => $job["driver_name"],
+                "cost" => number_format($job["status"] != "completed" ? $job["dtotal_actual"] : $job["dtotal"], 2),
+                "status" => $job["status"],
+                "dateCreated" => CommonFunctions::formatDated($job["date_created"]),
+                "timeCreated" => CommonFunctions::formatTime($job["date_created"]),
+            ];
+        }
+        // print_r($job);
+
+
         return $result;
     }
 }

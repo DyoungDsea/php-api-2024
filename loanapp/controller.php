@@ -20,16 +20,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $lname = CommonFunctions::clean($jsonData->lname);
         $phone = CommonFunctions::clean($jsonData->phone);
         $email = CommonFunctions::clean($jsonData->email);
-        $pass = CommonFunctions::clean($jsonData->pass);
-
-        $name = "$fname $lname";
+        $pass = CommonFunctions::clean($jsonData->pass); 
 
         $data = [
-            "customer_name" => $name,
-            "phone_number" => $phone,
-            "email_address" => $email,
-            "dtime" => CommonFunctions::getDateTime(1),
-            "pword" => md5($pass)
+            "dfirstname" => $fname,
+            "dlastname" => $lname,
+            "dphone" => $phone,
+            "demail" => $email,
+            "dpin" => rand(1234,6789),
+            "userid" => CommonFunctions::generateUniqueID(),
+            "dpassword" => CommonFunctions::hashPassword($pass),
+            "ddatetime" => CommonFunctions::getDateTime(1),
+            "ddate" => CommonFunctions::getDate('1 hour'),
         ];
 
         echo json_encode($model->createNewUser($email, $phone, $data));
@@ -42,40 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($model->login($user, $pass));
     }
 
-    //TODO: BOOKING
-    if (isset($jsonData->Message) and $jsonData->Message == 'booking') {
-        $userid = CommonFunctions::clean($jsonData->userid);
-        $name = CommonFunctions::clean($jsonData->name);
-        $phone = CommonFunctions::clean($jsonData->phone);
-        $email = CommonFunctions::clean($jsonData->email);
-        $category = CommonFunctions::clean($jsonData->category);
-        $pickup = CommonFunctions::clean($jsonData->pickup);
-        $dropoff = CommonFunctions::clean($jsonData->dropoff);
-        $pickupLat = CommonFunctions::clean($jsonData->pickupLat);
-        $pickupLong = CommonFunctions::clean($jsonData->pickupLong);
-        $dropoffLat = CommonFunctions::clean($jsonData->dropoffLat);
-        $dropoffLong = CommonFunctions::clean($jsonData->dropoffLong);
-        $cost = CommonFunctions::clean($jsonData->cost);
-        $transid = CommonFunctions::generateUniqueID();
-        $date = CommonFunctions::getDate('1 hour');
-
-        echo json_encode($model->booking([
-            "customer_id" => $userid,
-            "customer_name" => $name,
-            "phone_number" => $phone,
-            "email_address" => $email,
-            "car_category" => $category,
-            "pickup_address" => $pickup,
-            "dropoff_address" => $dropoff,
-            "pickup_lat" => $pickupLat,
-            "pickup_long" => $pickupLong,
-            "dropoff_lat" => $dropoffLat,
-            "dropoff_long" => $dropoffLong,
-            "dtotal_actual" => $cost,
-            "date_created" => $date,
-            "transid" => $transid,
-        ], $transid));
-    }
+   
 }
 
 
@@ -122,10 +91,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         echo json_encode($model->updateUser($data, ["customer_id" => $userid]));
     }
 
-    //TODO: CANCEL BOOKING 
-    if (isset($jsonData->Message) and $jsonData->Message == 'cancelBooking') {
-        $userid = CommonFunctions::clean($jsonData->userid); 
-        $transid = CommonFunctions::clean($jsonData->transid);  
-        echo json_encode($model->cancelBooking(["status" => "cancelled"], ["customer_id" => $userid,"transid"=>$transid]));
-    }
+     
 }

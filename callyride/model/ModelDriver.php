@@ -225,12 +225,12 @@ class ModelDriver
     {
         $user =  $this->query->read("manage_drivers")
             ->where(['driver_id' => $id])
-            ->get("licenseNumber, nin, plateNunmber, engineNumber, carColor, carDesc ", false);
+            ->get("licenseNumber, nin, plateNumber, engineNumber, carColor, carDesc ", false);
 
         $result = [
             "licenseNumber" => !empty($user["licenseNumber"]) ? $user["licenseNumber"] : "",
             "nin" => !empty($user["nin"]) ? $user["nin"] : "",
-            "plateNunmber" => !empty($user["plateNunmber"]) ? $user["plateNunmber"] : "",
+            "plateNumber" => !empty($user["plateNumber"]) ? $user["plateNumber"] : "",
             "engineNumber" => !empty($user["engineNumber"]) ? $user["engineNumber"] : "",
             "carColor" => !empty($user["carColor"]) ? $user["carColor"] : "",
             "carDesc" => !empty($user["carDesc"]) ? html_entity_decode($user["carDesc"]) : ""
@@ -332,6 +332,26 @@ class ModelDriver
         return $result;
     }
 
+    public function driverLatLong(array $data, array $clause)
+    {
+
+        //TODO: LATLONG
+        if ($this->helper->update("manage_drivers", $data, $clause)) {
+            $result = [
+                'ACCESS_CODE' => 'GRANTED',
+                'msg' => "Success, updated"
+            ];
+        } else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "Sorry, something wrong"
+            ];
+        }
+
+        return $result;
+    }
+
     public function  updateVehicleInfo(array $data, array $clause)
     {
 
@@ -399,7 +419,7 @@ class ModelDriver
     public function fetchAvalaibleJob()
     {
         $jobs =  $this->query->read("manage_bookings")
-        ->orderBy('id DESC')
+            ->orderBy('id DESC')
             ->limit(3)
             ->get();
         $result = [];
