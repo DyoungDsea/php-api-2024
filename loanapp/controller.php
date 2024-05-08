@@ -20,14 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $lname = CommonFunctions::clean($jsonData->lname);
         $phone = CommonFunctions::clean($jsonData->phone);
         $email = CommonFunctions::clean($jsonData->email);
-        $pass = CommonFunctions::clean($jsonData->pass); 
+        $pass = CommonFunctions::clean($jsonData->pass);
 
         $data = [
             "dfirstname" => $fname,
             "dlastname" => $lname,
             "dphone" => $phone,
             "demail" => $email,
-            "dpin" => rand(1234,6789),
+            "dpin" => rand(1234, 5678),
             "userid" => CommonFunctions::generateUniqueID(),
             "dpassword" => CommonFunctions::hashPassword($pass),
             "ddatetime" => CommonFunctions::getDateTime(1),
@@ -43,8 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pass = CommonFunctions::clean($jsonData->pass);
         echo json_encode($model->login($user, $pass));
     }
-
-   
 }
 
 
@@ -52,16 +50,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
 
     if (isset($jsonData->Message) and $jsonData->Message == 'resetPassword') {
-        $token1 = CommonFunctions::clean($jsonData->token1);
-        $token2 = CommonFunctions::clean($jsonData->token2);
-        $token3 = CommonFunctions::clean($jsonData->token3);
-        $token4 = CommonFunctions::clean($jsonData->token4);
+        $token = CommonFunctions::clean($jsonData->token);  
         $pass = CommonFunctions::clean($jsonData->pass);
         $email = CommonFunctions::clean($jsonData->email);
 
-        $token = "$token1$token2$token3$token4";
-
         echo json_encode($model->resetPassword($email, $token, $pass));
+    }
+
+    //TODO: VERIFY ACCOUNT
+    if (isset($jsonData->Message) and $jsonData->Message == 'verifyAccount') {
+        $userid = CommonFunctions::clean($jsonData->userid);
+        $pin = CommonFunctions::clean($jsonData->pin); 
+        echo json_encode($model->verifyAccount($userid, $pin));
     }
 
     //TODO: CHANGE PASSWORD
@@ -90,6 +90,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
 
         echo json_encode($model->updateUser($data, ["customer_id" => $userid]));
     }
-
-     
 }

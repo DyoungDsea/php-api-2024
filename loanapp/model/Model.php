@@ -20,7 +20,7 @@ class Model
 
     // User Login
     public function login($email, $password)
-    { 
+    {
         $query = "SELECT * FROM `dlogin` WHERE demail = :email OR dphone = :email";
         $stmt = $this->pdo->prepare($query);
         $stmt->bindParam(':email', $email);
@@ -28,18 +28,44 @@ class Model
 
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
- 
+
         if ($user) {
             $hashedPassword = CommonFunctions::hashPassword($password);
-            if (hash_equals($hashedPassword , $user["dpassword"])) {
-                $data = [
-                    "userid" => $user["userid"],
-                    "firstname" => $user["dfirstname"],
-                    "lastname" => $user["dlastname"],
-                    "phoneNumber" => $user["dphone"],
-                    "emailAddress" => $user["demail"],                    
+            $result =  [
+                "userid" => $user["userid"],
+                "firstname" => $user["dfirstname"],
+                "lastname" => $user["dlastname"],
+                "phoneNumber" => $user["dphone"],
+                "emailAddress" => $user["demail"],
+                "status" => $user["dstatus"],
 
-                ];
+            ];
+            if (hash_equals($hashedPassword, $user["dpassword"])) {
+                //TODO: CHECK THE STATUS OF THE ACCOUNT
+                if ($user["dstatus"] == 'pending') {
+                    $name = $user["dfirstname"];
+                    $userid = $user["userid"];
+                    $pin = rand(1234, 5678);
+                    //TODO: SEND PIN TO EMAIL & SMS
+                    $subject = "Verification | ZAMOGOZA";
+                    $msg = "
+                    <b>Dear $name,</b>  welcome to ZAMOGOZA LTD.
+                    <P>Use this code <b>$pin</b> to verify your account.</P>                    
+                    ";
+                    CommonFunctions::sendMail($msg, $email, $subject);
+                    $this->helper->update("dlogin", ["dpin" => $pin], ["userid" => $userid]);
+                    // http_response_code(401);
+                    $data = [
+                        'accessCode' => 'VERIFICATION',
+                        "data" => $result,
+                    ];
+                } else {
+                    $data = [
+                        "accessCode" => 'GRANTED',
+                        "data" => $result,
+
+                    ];
+                }
             } else {
                 http_response_code(400);
                 $data = [
@@ -60,31 +86,60 @@ class Model
         return $data; // Login failed
     }
 
+
+    //  TODO:VERIFY ACCOUNT
+    public function verifyAccount($userid, $pin)
+    {
+        $user = $this->query->read('dlogin')
+            ->where(['userid' => $userid, "dpin" => $pin])
+            ->get('*', false);
+
+        if ($user) {
+
+            $data = [
+                "userid" => $user["userid"],
+                "firstname" => $user["dfirstname"],
+                "lastname" => $user["dlastname"],
+                "phoneNumber" => $user["dphone"],
+                "emailAddress" => $user["demail"],
+                "status" => 'verified',
+
+            ];
+            $this->helper->update("dlogin", ["dstatus" => 'active'], ["userid" => $userid]);
+        } else {
+            http_response_code(400);
+            $data = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "Sorry, invalid code provided."
+            ];
+        }
+
+        return $data;
+    }
+
     public function forgotPassword(string $email)
     {
         //TODO: Check if email exist
-        $userEmail =  $this->query->read('manage_customers')
-            ->where(['email_address' => $email])
-            ->get('email_address, customer_name', false);
+        $userEmail =  $this->query->read('dlogin')
+            ->where(['demail' => $email])
+            ->get('demail, dfirstname, dstatus', false);
 
-        if (!empty($userEmail)) {
+        if (!empty($userEmail) && $userEmail['dstatus'] == 'active') {
             //TODO: Send security code
             $rand = rand(1234, 5678);
             $subject = "Reset Password";
-            $name = $userEmail['customer_name'];
-            $mailTemplate = "
+            $name = $userEmail['dfirstname'];
+            $msg = "
             <b>Dear $name,</b> <br>
             <p>Use this code <b>$rand</b> to reset your password</p>
             <p>Kindly ignore this if the request is not from you</p>
             ";
 
-            $test = "emailController/mailTemplate.php";
-            include 'emailController/mailTemplateApi.php';
+            CommonFunctions::sendMail($msg, $email, $subject);
 
-            $this->helper->update('manage_customers', ["vcode" => $rand], ["email_address" => $email]);
+            $this->helper->update('dlogin', ["dpin" => $rand], ["demail" => $email]);
             $result = [
                 'ACCESS_CODE' => 'GRANTED',
-                'user' => null,
                 'msg' => "Reset code has been sent to your email."
             ];
         } else {
@@ -98,19 +153,20 @@ class Model
 
         return $result;
     }
+
+
     public function resetPassword(string $email, string $token, string $pass)
     {
         //TODO: Check if email exist
-        $userEmail =  $this->query->read('manage_customers')
-            ->where(['email_address' => $email, 'vcode' => $token])
-            ->get('email_address, customer_name', false);
+        $userEmail =  $this->query->read('dlogin')
+            ->where(['demail' => $email, 'dpin' => $token])
+            ->get('demail, dfirstname', false);
 
         if (!empty($userEmail)) {
-
-            $this->helper->update('manage_customers', ["pword" => md5($pass)], ["email_address" => $email]);
+            $pass = CommonFunctions::hashPassword($pass);
+            $this->helper->update('dlogin', ["dpassword" => $pass], ["demail" => $email]);
             $result = [
                 'ACCESS_CODE' => 'GRANTED',
-                'user' => null,
                 'msg' => "Reset successfully."
             ];
         } else {
@@ -149,27 +205,28 @@ class Model
                     ";
                     CommonFunctions::sendMail($msg, $email, $subject);
                     $result = [
-                        'ACCESS_CODE' => 'GRANTED',
+                        'accessCode' => 'GRANTED',
                         "userid" => $data['userid'],
+                        'msg' => "Verify your account with the code sent to your email address or phone number."
                     ];
                 } else {
                     http_response_code(400);
                     $result = [
-                        'ACCESS_CODE' => 'DENIED',
+                        'accessCode' => 'DENIED',
                         'msg' => "Sorry, Something went wrong."
                     ];
                 }
             } else {
                 http_response_code(400);
                 $result = [
-                    'ACCESS_CODE' => 'DENIED',
+                    'accessCode' => 'DENIED',
                     'msg' => "Sorry, Phone number already taken."
                 ];
             }
         } else {
             http_response_code(400);
             $result = [
-                'ACCESS_CODE' => 'DENIED',
+                'accessCode' => 'DENIED',
                 'user' => null,
                 'msg' => "Sorry, Email address already taken."
             ];
@@ -183,16 +240,15 @@ class Model
     public function changePassword($userid, $oldPass, $newPass)
     {
 
-        $user = $this->query->read('manage_customers')
-            ->where(['customer_id' => $userid, "pword" => md5($oldPass)])
-            ->get('pword', false);
+        $user = $this->query->read('dlogin')
+            ->where(['userid' => $userid, "dpassword" => md5($oldPass)])
+            ->get('dpassword', false);
 
         if (!empty($user)) {
 
-            if ($this->helper->update("manage_customers", ["pword" => md5($newPass)], ["customer_id" => $userid])) {
+            if ($this->helper->update("dlogin", ["dpassword" => CommonFunctions::hashPassword($newPass)], ["userid" => $userid])) {
                 $result = [
                     'ACCESS_CODE' => 'ACCESS',
-                    'user' => null,
                     'msg' => "updated successfully."
                 ];
             }

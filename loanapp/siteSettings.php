@@ -3,8 +3,8 @@
 define('LOGO', "img/logo.png");
 define('ICON', "img/logo.png");
 define('SITETITLE', "Zamogoza LTD");
-define('SITELINK', "https://example.com/");
-define('SITEICON', "https://example.com/img/logo.png");
-define('SITELOGO', "https://example.com/img/logo.png");
-define('SITEINFO', "info@example.com");
-define('SITESUPPORT', "support@example.com"); 
+define('SITELINK', "https://samogoza.com/");
+define('SITEICON', "https://samogoza.com/img/logo.png");
+define('SITELOGO', "https://samogoza.com/img/logo.png");
+define('SITEINFO', "samoeihu@premium250.web-hosting.com");
+define('SITESUPPORT', "support@samogoza.com"); 

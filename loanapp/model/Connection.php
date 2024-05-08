@@ -12,7 +12,7 @@ class Connection
     private function createPDOConnection()
     {
         try {
-            //  $pdo = new PDO("mysql:host=localhost;dbname=callyrid_server", "callyrid_server", "@admin100@");
+            //  $pdo = new PDO("mysql:host=localhost;dbname=samoeihu_server", "samoeihu_server", "@admin100@");
             $pdo = new PDO("mysql:host=localhost;dbname=loanapp", "root", "");
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             return $pdo;

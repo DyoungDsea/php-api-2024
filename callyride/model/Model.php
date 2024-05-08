@@ -306,7 +306,7 @@ class Model
         if ($this->helper->create("manage_bookings", $data)) {
             $result = [
                 'ACCESS_CODE' => 'GRANDED',
-                "transid"=> "$transid",
+                "transid" => "$transid",
                 'msg' => "Well done!"
             ];
         } else {
@@ -442,7 +442,7 @@ class Model
             $distance = $this->helper->haversineDistance($userLat, $userLng, $lat, $lng);
             $getMinutes = round($this->helper->calculateDrivingTime($distance, 60));
             $bookingID = $booking['id'];
-            $result = [
+            $data = [
                 "id" => "$bookingID",
                 "driverid" => $driverid,
                 "driverName" => $booking['driver_name'],
@@ -453,11 +453,17 @@ class Model
                 "getMinutes" => $getMinutes == 0 ? "1" : "$getMinutes",
                 "photo" => $booking['driver_photo'],
                 "plateNumber" => $booking['plateNumber'],
-                "latitude" => $lat,
-                "longitude" => $lng,
+                "driverLatitude" => $lat,
+                "driverLongitude" => $lng,
+                "lat"=>$userLat,
+                "long"=>$userLng,
+            ];
+            $result = [
+                'ACCESS_CODE' => 'GRANTED',
+                'data' =>  $data
             ];
         } else {
-            http_response_code(400);
+            // http_response_code(400);
             $result = [
                 'ACCESS_CODE' => 'DENIED',
                 'msg' => "Searching for driver"
