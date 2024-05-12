@@ -23,7 +23,7 @@ class Helper
     }
 
 
- 
+
     //TODO: get All Record
     public function getAllRecord($tableName, $clause = '')
     {
@@ -62,64 +62,74 @@ class Helper
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
- 
 
 
-    //TODO create new record
+
+    //TODO CREATE RECORD
     public function create(string $table, array $values)
     {
         $columns = implode(', ', array_keys($values));
         $setClause = implode(', ', array_map(fn ($col) => "$col = :$col", array_keys($values)));
-
-        $sql = "INSERT INTO $table SET $setClause";
+        $sql = "INSERT INTO $table ($columns) VALUES ($setClause)";
 
         try {
+            // Prepare the statement
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($values);
+            foreach ($values as $key => $value) {
+                $stmt->bindValue(":$key", $value);
+            }
+
+            $stmt->execute();
+
             return true;
         } catch (PDOException $e) {
+            // Handle exceptions
             return false;
         }
     }
 
-    //TODO update any table
+
+    //TODO UPDATE ANY TABLE
     public function update(string $table, array $values, array $clause)
     {
         $setClause = implode(', ', array_map(fn ($col) => "$col = :$col", array_keys($values)));
-
-        $whereClause = '';
-        foreach ($clause as $column => $condition) {
-            $whereClause .= "$column = :$column AND ";
-        }
-        $whereClause = rtrim($whereClause, ' AND ');
-
+        $whereClause = implode(' AND ', array_map(fn ($column) => "$column = :$column", array_keys($clause)));
         $sql = "UPDATE $table SET $setClause WHERE $whereClause";
-
         try {
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute(array_merge($values, $clause));
+            foreach ($values as $key => $value) {
+                $stmt->bindValue(":$key", $value);
+            }
+            foreach ($clause as $key => $value) {
+                $stmt->bindValue(":$key", $value);
+            }
+
+            $stmt->execute();
+
             return true;
         } catch (PDOException $e) {
+            // Handle exceptions
             return false;
         }
     }
 
-    //TODO delete from any table
+
+    //TODO DELETE RECORD
     public function remove(string $table, array $clause)
     {
-        $whereClause = '';
-        foreach ($clause as $column => $condition) {
-            $whereClause .= "$column = :$column AND ";
-        }
-        $whereClause = rtrim($whereClause, ' AND ');
-
+        $whereClause = implode(' AND ', array_map(fn ($column) => "$column = :$column", array_keys($clause)));
         $sql = "DELETE FROM $table WHERE $whereClause";
 
         try {
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($clause);
+            foreach ($clause as $key => $value) {
+                $stmt->bindValue(":$key", $value);
+            }
+            $stmt->execute();
+
             return true;
         } catch (PDOException $e) {
+            // Handle exceptions
             return false;
         }
     }

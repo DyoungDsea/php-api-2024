@@ -61,5 +61,34 @@ class CommonFunctions
     }
 
 
+
+    public static function sendMessage($to, $message) {
+        $api_key = 'UW5b9lnzftn7QVkvqlCBTASMbErIWX01WDSzSE5sJAHGrnSd98t2KvoNDv6W';
+        $sender_id = 'Samogoza';
+        
+        $base_url = 'https://www.bulksmsnigeria.com/api/v1/sms/create';
+        
+        $data = [
+            'api_token' => $api_key,
+            'from' => $sender_id,
+            'to' => $to,
+            'body' => $message,
+        ];
+        
+        $ch = curl_init($base_url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        
+        $response = curl_exec($ch);
+        
+        if (curl_errno($ch)) {
+            echo 'Error: ' . curl_error($ch);
+        }
+        
+        curl_close($ch);
+        
+        return $response;
+      }
     
 }

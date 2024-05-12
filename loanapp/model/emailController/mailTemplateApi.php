@@ -1,8 +1,6 @@
 <?php
 
-
-
-
+$headers = '';
 $headers .= "Reply-To: The Sender <support@zamogoza.com>\r\n";
 $headers .= "Return-Path: The Sender <support@zamogoza.com>\r\n"; 
 $headers .= "From: Zamogoza LTD <samoeihu@premium250.web-hosting.com>" . "\r\n";

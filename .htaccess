@@ -18,7 +18,7 @@ RewriteRule ^planlist/\.php$ getPlan.php [L,QSA]
 
 
 #hugo express
-RewriteRule ^status/([a-zA-Z]+)/\.php$ hugo/status.php?userid=$1 [L,QSA]
+RewriteRule ^request/api/resendToken/([a-zA-Z0-9]+)/ getter.php?userid=$1 [L,QSA]
 
 
 

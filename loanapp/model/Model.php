@@ -31,14 +31,30 @@ class Model
 
         if ($user) {
             $hashedPassword = CommonFunctions::hashPassword($password);
-            $result =  [
+            $result = [
                 "userid" => $user["userid"],
                 "firstname" => $user["dfirstname"],
                 "lastname" => $user["dlastname"],
-                "phoneNumber" => $user["dphone"],
-                "emailAddress" => $user["demail"],
+                "fullname" => $user["dfullname"],
+                "phone" => $user["dphone"],
+                "email" => $user["demail"],
+                "computerId" => $user["computerId"],
+                "natureEmployed" => $user["natureEmployed"],
+                "yearEmployed" => $user["yearEmployed"],
+                "department" => $user["ddepartment"],
+                "designation" => $user["ddesignation"],
+                "residentAddress" => $user["residentAddress"],
+                "paymentSlip" => $user["paymentSlip"],
+                "passport" => $user["dpassport"],
+                "nextOfKinName" => $user["nextOfKinName"],
+                "nextOfKinGender" => $user["nextOfKinGender"],
+                "nextOfKinRelationship" => $user["nextOfKinRelationship"],
+                "nextOfKinPhone" => $user["nextOfKinPhone"],
+                "accountName" => $user["accountName"],
+                "accountNumber" => $user["accountNumber"],
+                "bankName" => $user["bankName"],
+                "accountStatus" => $user["account_status"],
                 "status" => $user["dstatus"],
-
             ];
             if (hash_equals($hashedPassword, $user["dpassword"])) {
                 //TODO: CHECK THE STATUS OF THE ACCOUNT
@@ -47,9 +63,9 @@ class Model
                     $userid = $user["userid"];
                     $pin = rand(1234, 5678);
                     //TODO: SEND PIN TO EMAIL & SMS
-                    $subject = "Verification | ZAMOGOZA";
+                    $subject = "Verification | SAMOGOZA";
                     $msg = "
-                    <b>Dear $name,</b>  welcome to ZAMOGOZA LTD.
+                    <b>Dear $name,</b>  welcome to SAMOGOZA LTD.
                     <P>Use this code <b>$pin</b> to verify your account.</P>                    
                     ";
                     CommonFunctions::sendMail($msg, $email, $subject);
@@ -70,7 +86,6 @@ class Model
                 http_response_code(400);
                 $data = [
                     'ACCESS_CODE' => 'DENIED',
-                    'staff' => null,
                     'msg' => "Incorect password provided."
                 ];
             }
@@ -78,7 +93,6 @@ class Model
             http_response_code(400);
             $data = [
                 'ACCESS_CODE' => 'DENIED',
-                'staff' => null,
                 'msg' => "Sorry, we don't have the information you provided."
             ];
         }
@@ -88,6 +102,37 @@ class Model
 
 
     //  TODO:VERIFY ACCOUNT
+    public function resendToken($userid)
+    {
+        $user = $this->query->read('dlogin')
+            ->where(['userid' => $userid])
+            ->get('dfirstname, demail, userid', false);
+
+        if (!empty($user)) {
+
+            $name = $user["dfirstname"];
+            $email = $user["demail"];
+            $userid = $user["userid"];
+            $pin = rand(1234, 5678);
+            //TODO: SEND PIN TO EMAIL & SMS
+            $subject = "Verification | SAMOGOZA";
+            $msg = "
+            <b>Dear $name,</b>  welcome to SAMOGOZA LTD.
+            <P>Use this code <b>$pin</b> to verify your account.</P>                    
+            ";
+            CommonFunctions::sendMail($msg, $email, $subject);
+            $this->helper->update("dlogin", ["dpin" => $pin], ["userid" => $userid]);
+        } else {
+            http_response_code(400);
+            $data = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "Sorry, invalid code provided."
+            ];
+        }
+
+        return $data;
+    }
+    //  TODO:VERIFY ACCOUNT
     public function verifyAccount($userid, $pin)
     {
         $user = $this->query->read('dlogin')
@@ -96,14 +141,31 @@ class Model
 
         if ($user) {
 
+
             $data = [
                 "userid" => $user["userid"],
                 "firstname" => $user["dfirstname"],
                 "lastname" => $user["dlastname"],
-                "phoneNumber" => $user["dphone"],
-                "emailAddress" => $user["demail"],
+                "fullname" => $user["dfullname"],
+                "phone" => $user["dphone"],
+                "email" => $user["demail"],
+                "computerId" => $user["computerId"],
+                "natureEmployed" => $user["natureEmployed"],
+                "yearEmployed" => $user["yearEmployed"],
+                "department" => $user["ddepartment"],
+                "designation" => $user["ddesignation"],
+                "residentAddress" => $user["residentAddress"],
+                "paymentSlip" => $user["paymentSlip"],
+                "passport" => $user["dpassport"],
+                "nextOfKinName" => $user["nextOfKinName"],
+                "nextOfKinGender" => $user["nextOfKinGender"],
+                "nextOfKinRelationship" => $user["nextOfKinRelationship"],
+                "nextOfKinPhone" => $user["nextOfKinPhone"],
+                "accountName" => $user["accountName"],
+                "accountNumber" => $user["accountNumber"],
+                "bankName" => $user["bankName"],
+                "accountStatus" => $user["account_status"],
                 "status" => 'verified',
-
             ];
             $this->helper->update("dlogin", ["dstatus" => 'active'], ["userid" => $userid]);
         } else {
@@ -198,9 +260,9 @@ class Model
                 ->get('dphone', false);
             if (empty($userPhone)) {
                 if ($this->helper->create("dlogin", $data)) {
-                    $subject = "Verification | ZAMOGOZA";
+                    $subject = "Verification | SAMOGOZA";
                     $msg = "
-                    <b>Dear $name,</b>  welcome to ZAMOGOZA LTD.
+                    <b>Dear $name,</b>  welcome to SAMOGOZA LTD.
                     <P>Use this code <b>$pin</b> to verify your account.</P>                    
                     ";
                     CommonFunctions::sendMail($msg, $email, $subject);
@@ -241,7 +303,7 @@ class Model
     {
 
         $user = $this->query->read('dlogin')
-            ->where(['userid' => $userid, "dpassword" => md5($oldPass)])
+            ->where(['userid' => $userid, "dpassword" => CommonFunctions::hashPassword($oldPass)])
             ->get('dpassword', false);
 
         if (!empty($user)) {
@@ -266,61 +328,116 @@ class Model
 
 
 
-    public function updateUser(array $data, array $clause)
+    // public function nextOfKin(array $data, array $clause)
+    // {
+
+    //     //TODO: check if email and phone number exist with ID
+    //     $email = $data['email_address'];
+    //     $phone = $data['phone_number'];
+
+    //     $userEmail = $this->query->read('manage_customers')
+    //         ->where(['email_address' => $email])
+    //         ->not($clause)
+    //         ->get('email_address', false);
+
+    //     if (empty($userEmail)) {
+
+    //         $userPhone =  $this->query->read('manage_customers')
+    //             ->where(['phone_number' => $phone])
+    //             ->not($clause)
+    //             ->get('phone_number', false);
+
+    //         if (empty($userPhone)) {
+
+    //             //TODO: update details
+    //             $this->helper->update("manage_customers", $data, $clause);
+
+    //             $userid = $clause['customer_id'];
+    //             $user = $this->helper->getSingleRecord('manage_customers', "WHERE customer_id = '$userid'");
+
+    //             if (!empty($user)) {
+    //                 $result = [
+    //                     "customerId" => $user["customer_id"],
+    //                     "customerName" => $user["customer_name"],
+    //                     "phoneNumber" => $user["phone_number"],
+    //                     "emailAddress" => $user["email_address"],
+    //                     "contactAddress" => $user["contact_address"],
+    //                     "avatar" => $user["avatar"],
+    //                     "dtime" => $user["dtime"],
+    //                     "walletBalance" => $user["wallet_balance"]
+    //                 ];
+    //             }
+    //         } else {
+    //             http_response_code(400);
+    //             $result = [
+    //                 'ACCESS_CODE' => 'DENIED',
+    //                 'user' => null,
+    //                 'msg' => "Sorry, Phone number already taken."
+    //             ];
+    //         }
+    //     } else {
+    //         http_response_code(400);
+    //         $result = [
+    //             'ACCESS_CODE' => 'DENIED',
+    //             'user' => null,
+    //             'msg' => "Sorry, Email address already taken."
+    //         ];
+    //     }
+    //     return $result;
+    // }
+
+
+    public function updatePersonalDetails(array $data, array $clause)
     {
 
-        //TODO: check if email and phone number exist with ID
-        $email = $data['email_address'];
-        $phone = $data['phone_number'];
+        //TODO: update details
+        if ($this->helper->update("dlogin", $data, $clause)) {
+            $userid = $clause['userid'];
+            $user = $this->helper->getSingleRecord('dlogin', "WHERE userid = '$userid'");
 
-        $userEmail = $this->query->read('manage_customers')
-            ->where(['email_address' => $email])
-            ->not($clause)
-            ->get('email_address', false);
-
-        if (empty($userEmail)) {
-
-            $userPhone =  $this->query->read('manage_customers')
-                ->where(['phone_number' => $phone])
-                ->not($clause)
-                ->get('phone_number', false);
-
-            if (empty($userPhone)) {
-
-                //TODO: update details
-                $this->helper->update("manage_customers", $data, $clause);
-
-                $userid = $clause['customer_id'];
-                $user = $this->helper->getSingleRecord('manage_customers', "WHERE customer_id = '$userid'");
-
-                if (!empty($user)) {
-                    $result = [
-                        "customerId" => $user["customer_id"],
-                        "customerName" => $user["customer_name"],
-                        "phoneNumber" => $user["phone_number"],
-                        "emailAddress" => $user["email_address"],
-                        "contactAddress" => $user["contact_address"],
-                        "avatar" => $user["avatar"],
-                        "dtime" => $user["dtime"],
-                        "walletBalance" => $user["wallet_balance"]
-                    ];
-                }
+            if (!empty($user)) {
+                $result = [
+                    "userid" => $user["userid"],
+                    "firstname" => $user["dfirstname"],
+                    "lastname" => $user["dlastname"],
+                    "fullname" => $user["dfullname"],
+                    "phone" => $user["dphone"],
+                    "email" => $user["demail"],
+                    "computerId" => $user["computerId"],
+                    "natureEmployed" => $user["natureEmployed"],
+                    "yearEmployed" => $user["yearEmployed"],
+                    "department" => $user["ddepartment"],
+                    "designation" => $user["ddesignation"],
+                    "residentAddress" => $user["residentAddress"],
+                    "paymentSlip" => $user["paymentSlip"],
+                    "passport" => $user["dpassport"],
+                    "nextOfKinName" => $user["nextOfKinName"],
+                    "nextOfKinGender" => $user["nextOfKinGender"],
+                    "nextOfKinRelationship" => $user["nextOfKinRelationship"],
+                    "nextOfKinPhone" => $user["nextOfKinPhone"],
+                    "accountName" => $user["accountName"],
+                    "accountNumber" => $user["accountNumber"],
+                    "bankName" => $user["bankName"],
+                    "accountStatus" => $user["account_status"],
+                    "status" => $user["dstatus"],
+                ];
             } else {
                 http_response_code(400);
                 $result = [
                     'ACCESS_CODE' => 'DENIED',
-                    'user' => null,
-                    'msg' => "Sorry, Phone number already taken."
+                    'msg' => "Sorry, we\'re unable to submit your request."
                 ];
             }
         } else {
             http_response_code(400);
             $result = [
                 'ACCESS_CODE' => 'DENIED',
-                'user' => null,
-                'msg' => "Sorry, Email address already taken."
+                'msg' => "Sorry, something went wrong."
             ];
         }
+
+
+
         return $result;
     }
 }
