@@ -15,7 +15,7 @@
     body {
       width: 650px;
       font-family: work-Sans, sans-serif;
-      background-color: #f6f7fb;
+      background-color: #002E5B;
       display: block;
     }
 
@@ -37,11 +37,14 @@
     .text-center {
       text-align: center
     }
+    *{
+      color: #fff !important;
+    }
   </style>
 </head>
 
 <body style="margin: 30px auto;">
-  <table style="width: 100%">
+  <table style="width: 100%; padding:20px">
     <tbody>
       <tr>
         <td>

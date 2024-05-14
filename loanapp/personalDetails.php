@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     //TODO: UPDATE PERSONAL DETAILS
     if (isset($_POST['Message']) and $_POST['Message'] == 'personalDetails') {
 
+        $compiterID = CommonFunctions::clean($_POST['compiterID']);
         $fullname = CommonFunctions::clean($_POST['fullname']);
         $phone = CommonFunctions::clean($_POST['phone']);
         $employment = CommonFunctions::clean($_POST['employment']);
@@ -29,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
         $data = [
+            "computerId" => $compiterID,
             "dfullname" => $fullname,
             "dphone" => $phone,
             "natureEmployed" => $employment,

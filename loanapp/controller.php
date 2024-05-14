@@ -40,6 +40,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($model->createNewUser($email, $phone, $data));
     }
 
+    //TODO: APPLY FOR LOAN
+    if (isset($jsonData->Message) and $jsonData->Message == 'applyForLoan') {
+
+        $userid = CommonFunctions::clean($jsonData->userid);
+        $duration = CommonFunctions::clean($jsonData->duration);
+        $gross = CommonFunctions::clean($jsonData->gross);
+        $net = CommonFunctions::clean($jsonData->net);
+        $amountApply = CommonFunctions::clean($jsonData->amountApply);
+        $amountInWords = CommonFunctions::clean($jsonData->amountInWords);
+
+        $level = CommonFunctions::clean($jsonData->level);
+        $amountSpread = CommonFunctions::clean($jsonData->amountSpread);
+        $spreadPeriod = CommonFunctions::clean($jsonData->month);
+        $amountDeducted = CommonFunctions::clean($jsonData->amountDeducted);
+        $available = CommonFunctions::clean($jsonData->available);
+        $StartDate = CommonFunctions::clean($jsonData->startDate);
+
+        
+        $fullname = CommonFunctions::clean($jsonData->fullname);
+        $phone = CommonFunctions::clean($jsonData->phone);
+        $email = CommonFunctions::clean($jsonData->email);
+
+       
+
+        $data = [            
+            "rid" => CommonFunctions::generateUniqueID(),
+            "userid" => $userid,
+            "dduration" => $duration,
+            "grossMonthly" => $gross,
+            "netMonthly" => $net,
+            "amountApply" => $amountApply,
+            "amountInWords" => $amountInWords,
+            "dlevel" => $level,
+            "amountRequest" => $amountApply,
+            "amountSpread" => $amountSpread,
+            "spreadPeriod" => $spreadPeriod,
+            "amountDeducted" => $amountDeducted,
+            "deductionDate" => $StartDate,
+            "amountAvailable" => $amountSpread,
+            "ddate" => CommonFunctions::getDateTime(1),
+            "approveDate" => CommonFunctions::getDateTime(1),
+        ];
+
+        echo json_encode($model->applyForLoan($email, $phone, $fullname, $data));
+    }
+
     //TODO: lOGIN
     if (isset($jsonData->Message) and $jsonData->Message == 'login') {
         $user = CommonFunctions::clean($jsonData->user);

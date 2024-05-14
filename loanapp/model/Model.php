@@ -75,6 +75,12 @@ class Model
                         'accessCode' => 'VERIFICATION',
                         "data" => $result,
                     ];
+                } elseif ($user["dstatus"] == 'banned') {
+                    http_response_code(400);
+                    $data = [
+                        'ACCESS_CODE' => 'DENIED',
+                        'msg' => "Your account has been banned, you cannot login to your account."
+                    ];
                 } else {
                     $data = [
                         "accessCode" => 'GRANTED',
@@ -140,7 +146,6 @@ class Model
             ->get('*', false);
 
         if ($user) {
-
 
             $data = [
                 "userid" => $user["userid"],
@@ -328,63 +333,35 @@ class Model
 
 
 
-    // public function nextOfKin(array $data, array $clause)
-    // {
+    public function applyForLoan(string $email, string $phone, string $name, array $data)
+    {
 
-    //     //TODO: check if email and phone number exist with ID
-    //     $email = $data['email_address'];
-    //     $phone = $data['phone_number'];
+        //TODO: check if email and phone number exist with ID 
+        $amount = CommonFunctions::formatNaira($data['amountApply']);
 
-    //     $userEmail = $this->query->read('manage_customers')
-    //         ->where(['email_address' => $email])
-    //         ->not($clause)
-    //         ->get('email_address', false);
+        if ($this->helper->create("drequest", $data)) {
+            $rid = $data['rid'];
 
-    //     if (empty($userEmail)) {
+            $result =  $this->query->read('drequest')
+                ->where(['rid' => $rid])
+                ->get('*', false);
 
-    //         $userPhone =  $this->query->read('manage_customers')
-    //             ->where(['phone_number' => $phone])
-    //             ->not($clause)
-    //             ->get('phone_number', false);
+            $subject = "LOAN REQUEST | SAMOGOZA";
+            $msg = "
+            <b>Dear $name,</b>
+            <P>Your request for a loan of <b>$amount</b> has been received, you will receive a message once your loan request has been approved.</P>                    
+            ";
+            // CommonFunctions::sendMail($msg, $email, $subject);
 
-    //         if (empty($userPhone)) {
-
-    //             //TODO: update details
-    //             $this->helper->update("manage_customers", $data, $clause);
-
-    //             $userid = $clause['customer_id'];
-    //             $user = $this->helper->getSingleRecord('manage_customers', "WHERE customer_id = '$userid'");
-
-    //             if (!empty($user)) {
-    //                 $result = [
-    //                     "customerId" => $user["customer_id"],
-    //                     "customerName" => $user["customer_name"],
-    //                     "phoneNumber" => $user["phone_number"],
-    //                     "emailAddress" => $user["email_address"],
-    //                     "contactAddress" => $user["contact_address"],
-    //                     "avatar" => $user["avatar"],
-    //                     "dtime" => $user["dtime"],
-    //                     "walletBalance" => $user["wallet_balance"]
-    //                 ];
-    //             }
-    //         } else {
-    //             http_response_code(400);
-    //             $result = [
-    //                 'ACCESS_CODE' => 'DENIED',
-    //                 'user' => null,
-    //                 'msg' => "Sorry, Phone number already taken."
-    //             ];
-    //         }
-    //     } else {
-    //         http_response_code(400);
-    //         $result = [
-    //             'ACCESS_CODE' => 'DENIED',
-    //             'user' => null,
-    //             'msg' => "Sorry, Email address already taken."
-    //         ];
-    //     }
-    //     return $result;
-    // }
+        } else {
+            http_response_code(400);
+            $result = [
+                'accessCode' => 'DENIED',
+                'msg' => "Sorry, Something went wrong."
+            ];
+        }
+        return $result;
+    }
 
 
     public function updatePersonalDetails(array $data, array $clause)

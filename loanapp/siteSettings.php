@@ -2,7 +2,7 @@
 
 define('LOGO', "img/logo.png");
 define('ICON', "img/logo.png");
-define('SITETITLE', "Zamogoza LTD");
+define('SITETITLE', "Samogoza LTD");
 define('SITELINK', "https://samogoza.com/");
 define('SITEICON', "https://samogoza.com/img/logo.png");
 define('SITELOGO', "https://samogoza.com/img/logo.png");

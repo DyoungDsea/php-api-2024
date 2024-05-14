@@ -1,10 +1,10 @@
 <?php
 
 $headers = '';
-$headers .= "Reply-To: The Sender <support@zamogoza.com>\r\n";
-$headers .= "Return-Path: The Sender <support@zamogoza.com>\r\n"; 
-$headers .= "From: Zamogoza LTD <samoeihu@premium250.web-hosting.com>" . "\r\n";
-$headers .= "Organization: Zamogoza LTD\r\n";
+$headers .= "Reply-To: The Sender <support@samogoza.com>\r\n";
+$headers .= "Return-Path: The Sender <support@samogoza.com>\r\n"; 
+$headers .= "From: Samogoza LTD <samoeihu@premium250.web-hosting.com>" . "\r\n";
+$headers .= "Organization: Samogoza LTD\r\n";
 $headers .= "MIME-Version: 1.0\r\n";
 $headers .= "Content-type: text/html; charset=utf-8\r\n";
 $headers .= "X-Priority: 3\r\n";

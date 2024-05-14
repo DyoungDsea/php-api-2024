@@ -70,7 +70,7 @@ class Helper
     {
         $columns = implode(', ', array_keys($values));
         $setClause = implode(', ', array_map(fn ($col) => "$col = :$col", array_keys($values)));
-        $sql = "INSERT INTO $table ($columns) VALUES ($setClause)";
+        $sql = "INSERT INTO $table SET $setClause"; // Using SET clause
 
         try {
             // Prepare the statement
@@ -87,6 +87,7 @@ class Helper
             return false;
         }
     }
+
 
 
     //TODO UPDATE ANY TABLE
