@@ -25,8 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $resident = CommonFunctions::clean($_POST['resident']);
         $userid = CommonFunctions::clean($_POST['userid']);
 
-        $oldSlip = CommonFunctions::clean($_POST['oldSlip']);
-        $oldPassport = CommonFunctions::clean($_POST['oldPassport']);
+        // $oldSlip = CommonFunctions::clean($_POST['oldSlip']);
+        // $oldPassport = CommonFunctions::clean($_POST['oldPassport']);
 
 
         $data = [

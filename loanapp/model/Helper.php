@@ -63,6 +63,18 @@ class Helper
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    //TODO get single record from database
+    public function getRecord($tableName,  $selector = "*", $clause = '')
+    {
+        $query = "SELECT $selector FROM $tableName";
+        if (!empty($clause)) {
+            $query .= " $clause";
+        }
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
 
 
     //TODO CREATE RECORD

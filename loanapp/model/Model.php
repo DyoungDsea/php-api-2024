@@ -138,6 +138,51 @@ class Model
 
         return $data;
     }
+
+    //  TODO:GET TOTAL APPROVED LOANS
+    public function getTotalLoans($userid)
+    { 
+        $result = $this->helper->getRecord('drequest', "SUM(amountApply) AS total", " WHERE userid='$userid' AND dstatus !='completed'");
+        $getPendng = $this->helper->getRecord('drequest', "dstatus", " WHERE userid='$userid'");
+
+    
+        if (!empty($result)) {
+            $data = [
+                "totalApply" => is_null($result["total"])? '0': $result["total"],
+                "getPendng" => $getPendng["dstatus"],
+            ];
+        }
+        return  $data;
+    }
+
+    //  TODO:GET ALL LOANS REQUEST
+    public function getLoans($userid)
+    {
+        $result = $this->query->read('drequest')
+            ->where(['userid' => $userid])
+            ->orderBy("id DESC")
+            ->get('*', true);
+
+        $data = [];
+        if (!empty($result)) {
+            foreach ($result as $row) {
+                $data[] = [
+                    "dduration" => $row['dduration'],
+                    "amountApply" => $row['amountApply'],
+                    "amountRequest" => $row['amountRequest'],
+                    "amountSpread" => $row['amountSpread'],
+                    "spreadPeriod" => $row['spreadPeriod'],
+                    "amountDeducted" => $row['amountDeducted'],
+                    "dstatus" => $row['dstatus'],
+                    "ddate" => $row['ddate'],
+                    "approveDate" => $row['approveDate'],
+                ];
+                # code...
+            }
+        }
+        return  $data;
+    }
+
     //  TODO:VERIFY ACCOUNT
     public function verifyAccount($userid, $pin)
     {
@@ -342,25 +387,36 @@ class Model
         if ($this->helper->create("drequest", $data)) {
             $rid = $data['rid'];
 
-            $result =  $this->query->read('drequest')
+            $row =  $this->query->read('drequest')
                 ->where(['rid' => $rid])
                 ->get('*', false);
+            $data = [
+                "dduration" => $row['dduration'],
+                "amountApply" => $row['amountApply'],
+                "amountRequest" => $row['amountRequest'],
+                "amountSpread" => $row['amountSpread'],
+                "spreadPeriod" => $row['spreadPeriod'],
+                "amountDeducted" => $row['amountDeducted'],
+                "dstatus" => $row['dstatus'],
+                "ddate" => $row['ddate'],
+                "approveDate" => $row['approveDate'],
+            ];
 
             $subject = "LOAN REQUEST | SAMOGOZA";
             $msg = "
             <b>Dear $name,</b>
-            <P>Your request for a loan of <b>$amount</b> has been received, you will receive a message once your loan request has been approved.</P>                    
+            <P>Your request for a loan of <b>$amount</b> has been received, 
+            you will receive a message once your loan request has been approved.</P>                    
             ";
-            // CommonFunctions::sendMail($msg, $email, $subject);
-
+            CommonFunctions::sendMail($msg, $email, $subject);
         } else {
             http_response_code(400);
-            $result = [
+            $data = [
                 'accessCode' => 'DENIED',
                 'msg' => "Sorry, Something went wrong."
             ];
         }
-        return $result;
+        return $data;
     }
 
 
