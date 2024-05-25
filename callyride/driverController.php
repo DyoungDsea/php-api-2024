@@ -37,6 +37,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 //TODO: PUT REQUEST
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
 
+    //TODO: MARK JOB STATUS
+    if (isset($jsonData->Message) and $jsonData->Message == 'markJobStatus') {
+        $id = CommonFunctions::clean($jsonData->id);
+        $status = CommonFunctions::clean($jsonData->status);
+        if ($status == 'accepted') {
+            $data = ["driver_status" => 'accepted'];
+        } else {
+            $data = ["driver_status" => 'rejected'];
+        }
+
+        echo json_encode($modelDriver->markJobStatus($data, ["id" => $id]));
+    }
     //TODO: RESET PASSWORD
     if (isset($jsonData->Message) and $jsonData->Message == 'resetPassword') {
         $token1 = CommonFunctions::clean($jsonData->token1);
@@ -70,7 +82,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $userid = CommonFunctions::clean($jsonData->userid);
         $data = [
             "driver_latitude" => $lat,
-            "driver_longitude" => $long
+            "driver_longitude" => $long,
+            "log_status" => 'online',
         ];
 
         echo json_encode($modelDriver->driverLatLong($data, ["driver_id" => $userid]));
@@ -96,6 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     //TODO: UPDATE VEHICLE DETAILS
     if (isset($jsonData->Message) and $jsonData->Message == 'vehicleDetails') {
 
+        $carName = CommonFunctions::clean($jsonData->carName);
         $license = CommonFunctions::clean($jsonData->license);
         $nin = CommonFunctions::clean($jsonData->nin);
         $plateNo = CommonFunctions::clean($jsonData->plateNo);
@@ -105,12 +119,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $userid = CommonFunctions::clean($jsonData->userid);
 
         $data = [
+            "car_type" => $carName,
             "nin" => $nin,
             "carDesc" => $desc,
             "carColor" => $color,
-            "plateNunmber" => $plateNo,
+            "plateNumber" => $plateNo,
             "engineNumber" => $enginNo,
-            "licenseNumber" => $license,
+            "licenseNumber" => $license
         ];
 
         echo json_encode($modelDriver->updateVehicleInfo($data, ["driver_id" => $userid]));

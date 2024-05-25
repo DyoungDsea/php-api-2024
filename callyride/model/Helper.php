@@ -120,26 +120,27 @@ class Helper
     //TODO update any table
     public function update(string $table, array $values, array $clause)
     {
-
-        // Prepare the query dynamically
         $setClause = implode(', ', array_map(fn ($col) => "$col = :$col", array_keys($values)));
-
-        $whereClause = '';
-        foreach ($clause as $column => $condition) {
-            $whereClause .= "$column = :$column AND ";
-        }
-        $whereClause = rtrim($whereClause, ' AND ');
-
+        $whereClause = implode(' AND ', array_map(fn ($column) => "$column = :$column", array_keys($clause)));
         $sql = "UPDATE $table SET $setClause WHERE $whereClause";
-
         try {
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute(array_merge($values, $clause));
-            return true; // Record updated successfully
+            foreach ($values as $key => $value) {
+                $stmt->bindValue(":$key", $value);
+            }
+            foreach ($clause as $key => $value) {
+                $stmt->bindValue(":$key", $value);
+            }
+
+            $stmt->execute();
+
+            return true;
         } catch (PDOException $e) {
+            // Handle exceptions
             return false;
         }
     }
+
 
     //TODO delete from any table
     public function remove(string $table, array $clause)

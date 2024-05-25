@@ -13,6 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         echo json_encode($model->category($distance));
     }
 
+    //TODO: get Driver Pending Job
+    if (isset($_GET['Message']) and $_GET['Message'] == 'getDriverPendingJob') {
+        $driverid = CommonFunctions::clean($_GET['driverid']);
+        echo json_encode($modelDriver->getDriverPendingJob($driverid));
+    }
     //TODO: fech all vehicle category
     if (isset($_GET['Message']) and $_GET['Message'] == 'driver') {
         $driverid = CommonFunctions::clean($_GET['driverid']);

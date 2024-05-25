@@ -46,7 +46,9 @@ class ModelDriver
                     "frontView" => empty($user["frontView"]) ? "" : $user["frontView"],
                     "lastupdate" => empty($user["lastupdate"]) ? "" : $user["lastupdate"],
                     "walletBalance" => $user["wallet_balance"],
-                    "carVerification" => $user["carVerification"]
+                    "carVerification" => $user["carVerification"],
+                    "driverLicenceFront" => !empty($user["driverLicenceFront"]) ? $user["driverLicenceFront"] : "",
+                    "engineView" => !empty($user["engineView"]) ? $user["engineView"] : ""
 
                 ];
             } else {
@@ -109,7 +111,9 @@ class ModelDriver
                         "frontView" => empty($user["frontView"]) ? "" : $user["frontView"],
                         "lastupdate" => empty($user["lastupdate"]) ? "" : $user["lastupdate"],
                         "walletBalance" => $user["wallet_balance"],
-                        "carVerification" => $user["carVerification"]
+                        "carVerification" => $user["carVerification"],
+                        "driverLicenceFront" => !empty($user["driverLicenceFront"]) ? $user["driverLicenceFront"] : "",
+                        "engineView" => !empty($user["engineView"]) ? $user["engineView"] : ""
 
                     ];
                 }
@@ -190,6 +194,29 @@ class ModelDriver
         return $result;
     }
 
+
+    public function markJobStatus(array $data, array $clause)
+    {
+
+        if ($this->helper->update('manage_bookings', $data, $clause)) {
+
+            $result = [
+                'ACCESS_CODE' => 'GRANTED',
+                'msg' => "Success"
+            ];
+        } else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "Sorry, something went wrong"
+            ];
+        }
+
+        return $result;
+    }
+
+
+
     public function category(string $distance): array
     {
         $category = $this->query->read("drive_categories")
@@ -206,6 +233,48 @@ class ModelDriver
         }
         return $res;
     }
+
+
+    public function getDriverPendingJob(string $id)
+    {
+        $user =  $this->query->read("manage_bookings")
+            ->where(['driver_id' => $id, "driver_status" => 'pending'])
+            ->orderBy("id DESC")
+            ->limit(1)
+            ->get("*", false);
+
+        if (!empty($user)) {
+            $result = [
+                "id" => $user["id"],
+                "customerName" => $user["customer_name"],
+                "customerPhone" => $user["phone_number"],
+                "customerAddress" => $user["email_address"],
+                "pickupAddress" => $user["pickup_address"],
+                "dropoffAddress" => $user["dropoff_address"],
+                "pickupLat" => $user["pickup_lat"],
+                "pickupLong" => $user["pickup_long"],
+                "dropoffLat" => $user["dropoff_lat"],
+                "dropoffLong" => $user["dropoff_long"],
+                "driverName" => $user["driver_name"],
+                "cost" => CommonFunctions::withNaira($user["dtotal"]),
+                "status" => $user["status"],
+                "dateCreated" => CommonFunctions::formatDated($user["date_created"]),
+                "timeCreated" => CommonFunctions::formatTime($user["date_created"]),
+            ];
+        } else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "No pending job for you."
+            ];
+        }
+
+        return $result;
+    }
+
+
+
+
     public function getDetails(string $id)
     {
         $user =  $this->query->read("manage_drivers")
@@ -221,6 +290,9 @@ class ModelDriver
 
         return $result;
     }
+
+
+
     public function viewDetails(string $id)
     {
         $user =  $this->query->read("manage_drivers")
@@ -309,7 +381,9 @@ class ModelDriver
                         "frontView" => empty($user["frontView"]) ? "" : $user["frontView"],
                         "lastupdate" => empty($user["lastupdate"]) ? "" : $user["lastupdate"],
                         "walletBalance" => $user["wallet_balance"],
-                        "carVerification" => $user["carVerification"]
+                        "carVerification" => $user["carVerification"],
+                        "driverLicenceFront" => !empty($user["driverLicenceFront"]) ? $user["driverLicenceFront"] : "",
+                        "engineView" => !empty($user["engineView"]) ? $user["engineView"] : ""
 
                     ];
                 }
@@ -371,7 +445,9 @@ class ModelDriver
                     "frontView" => empty($user["frontView"]) ? "" : $user["frontView"],
                     "lastupdate" => empty($user["lastupdate"]) ? "" : $user["lastupdate"],
                     "walletBalance" => $user["wallet_balance"],
-                    "carVerification" => $user["carVerification"]
+                    "carVerification" => $user["carVerification"],
+                    "driverLicenceFront" => !empty($user["driverLicenceFront"]) ? $user["driverLicenceFront"] : "",
+                    "engineView" => !empty($user["engineView"]) ? $user["engineView"] : ""
 
                 ];
             }
@@ -394,6 +470,7 @@ class ModelDriver
         $result = [];
         foreach ($jobs as $job) {
             $result[] = [
+                "id" => $job["id"],
                 "customerName" => $job["customer_name"],
                 "customerPhone" => $job["phone_number"],
                 "customerAddress" => $job["email_address"],
@@ -425,6 +502,7 @@ class ModelDriver
         $result = [];
         foreach ($jobs as $job) {
             $result[] = [
+                "id" => $job["id"],
                 "customerName" => $job["customer_name"],
                 "customerPhone" => $job["phone_number"],
                 "customerAddress" => $job["email_address"],
