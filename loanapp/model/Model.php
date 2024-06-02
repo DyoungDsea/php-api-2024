@@ -141,15 +141,15 @@ class Model
 
     //  TODO:GET TOTAL APPROVED LOANS
     public function getTotalLoans($userid)
-    { 
-        $result = $this->helper->getRecord('drequest', "SUM(amountApply) AS total", " WHERE userid='$userid' AND dstatus !='completed'");
+    {
+        $result = $this->helper->getRecord('drequest', "SUM(totalBalance) AS total", " WHERE userid='$userid' AND (dstatus ='pending' OR dstatus='approved')");
         $getPendng = $this->helper->getRecord('drequest', "dstatus", " WHERE userid='$userid'");
 
-    
+
         if (!empty($result)) {
             $data = [
-                "totalApply" => is_null($result["total"])? '0': $result["total"],
-                "getPendng" => $getPendng["dstatus"],
+                "totalApply" => is_null($result["total"]) ? '0' : $result["total"],
+                "getPendng" => is_null($getPendng["dstatus"]) ? '' : $getPendng["dstatus"],
             ];
         }
         return  $data;
@@ -173,6 +173,9 @@ class Model
                     "amountSpread" => $row['amountSpread'],
                     "spreadPeriod" => $row['spreadPeriod'],
                     "amountDeducted" => $row['amountDeducted'],
+                    "totalInterest" => $row['totalInterest'],
+                    "totalPayment" => $row['totalPayment'],
+                    "totalBalance" => $row['totalBalance'],
                     "dstatus" => $row['dstatus'],
                     "ddate" => $row['ddate'],
                     "approveDate" => $row['approveDate'],
@@ -397,6 +400,9 @@ class Model
                 "amountSpread" => $row['amountSpread'],
                 "spreadPeriod" => $row['spreadPeriod'],
                 "amountDeducted" => $row['amountDeducted'],
+                "totalInterest" => $row['totalInterest'],
+                "totalPayment" => $row['totalPayment'],
+                "totalBalance" => $row['totalBalance'],
                 "dstatus" => $row['dstatus'],
                 "ddate" => $row['ddate'],
                 "approveDate" => $row['approveDate'],
@@ -470,6 +476,26 @@ class Model
         }
 
 
+
+        return $result;
+    }
+
+    public function terms()
+    {
+        $row =  $this->query->read('terms')
+            ->get('*', false);
+
+        if (!empty($row)) {
+            $result = [
+                "terms" => $row["terms"],
+            ];
+        } else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "Sorry, we\'re unable to fetch data."
+            ];
+        }
 
         return $result;
     }

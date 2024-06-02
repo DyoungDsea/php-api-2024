@@ -43,8 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     //TODO: APPLY FOR LOAN
     if (isset($jsonData->Message) and $jsonData->Message == 'applyForLoan') {
 
-        $userid = CommonFunctions::clean($jsonData->userid);
-        $duration = CommonFunctions::clean($jsonData->duration);
+        $userid = CommonFunctions::clean($jsonData->userid); 
         $gross = CommonFunctions::clean($jsonData->gross);
         $net = CommonFunctions::clean($jsonData->net);
         $amountApply = CommonFunctions::clean($jsonData->amountApply);
@@ -54,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $amountSpread = CommonFunctions::clean($jsonData->amountSpread);
         $spreadPeriod = CommonFunctions::clean($jsonData->month);
         $amountDeducted = CommonFunctions::clean($jsonData->amountDeducted);
+        $totalInterest = CommonFunctions::clean($jsonData->totalInterest);
         $available = CommonFunctions::clean($jsonData->available);
         $StartDate = CommonFunctions::clean($jsonData->startDate);
 
@@ -62,21 +62,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $phone = CommonFunctions::clean($jsonData->phone);
         $email = CommonFunctions::clean($jsonData->email);
 
+        $totalBalance = ($amountApply + $totalInterest);
+
        
 
         $data = [            
             "rid" => CommonFunctions::generateUniqueID(),
-            "userid" => $userid,
-            "dduration" => $duration,
+            "userid" => $userid, 
             "grossMonthly" => $gross,
             "netMonthly" => $net,
-            "amountApply" => $amountApply,
-            "amountInWords" => $amountInWords,
+            "amountApply" => $amountApply, 
             "dlevel" => $level,
             "amountRequest" => $amountApply,
             "amountSpread" => $amountSpread,
             "spreadPeriod" => $spreadPeriod,
             "amountDeducted" => $amountDeducted,
+            "totalInterest" => $totalInterest,
+            "totalPayment" => '0.00',
+            "totalBalance" => $totalBalance,
             "deductionDate" => $StartDate,
             "amountAvailable" => $amountSpread,
             "ddate" => CommonFunctions::getDateTime(1),

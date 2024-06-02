@@ -128,4 +128,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $transid = CommonFunctions::clean($jsonData->transid);  
         echo json_encode($model->cancelBooking(["status" => "cancelled"], ["customer_id" => $userid,"transid"=>$transid]));
     }
+
+   
 }
