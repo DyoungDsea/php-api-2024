@@ -124,10 +124,6 @@ class CommonFunctions
         }
     }
 
-    public static  function  generateJwtSecretKey()
-    {
-        return hash('SH256', bin2hex(random_bytes(64)));
-    }
 
     public static  function getAuthorizationHeader()
     {

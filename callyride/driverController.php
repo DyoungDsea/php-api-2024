@@ -38,6 +38,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
 
     //TODO: MARK JOB STATUS
+    if (isset($jsonData->Message) and $jsonData->Message == 'endTrip') {
+        $id = CommonFunctions::clean($jsonData->tripId);
+        $cost = CommonFunctions::clean($jsonData->cost);
+        $currentAddress = CommonFunctions::clean($jsonData->currentAddress);
+        $lat = CommonFunctions::clean($jsonData->lat);
+        $lng = CommonFunctions::clean($jsonData->lng);
+        $driverid = CommonFunctions::clean($jsonData->userid);
+
+        $data = [
+            "status" => 'completed',
+            "dtotal" => $cost,
+            "dropoff_address" => $currentAddress,
+            "dropoff_lat" => $lat,
+            "dropoff_long" => $lng,
+        ];
+
+        echo json_encode($modelDriver->updateChanges($data, ["id" => $id]));
+    }
+
+    //TODO: MARK JOB STATUS
     if (isset($jsonData->Message) and $jsonData->Message == 'markJobStatus') {
         $id = CommonFunctions::clean($jsonData->id);
         $status = CommonFunctions::clean($jsonData->status);
@@ -47,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
             $data = ["driver_status" => 'rejected'];
         }
 
-        echo json_encode($modelDriver->markJobStatus($data, ["id" => $id]));
+        echo json_encode($modelDriver->updateChanges($data, ["id" => $id]));
     }
     //TODO: RESET PASSWORD
     if (isset($jsonData->Message) and $jsonData->Message == 'resetPassword') {

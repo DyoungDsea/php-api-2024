@@ -1,5 +1,6 @@
 <?php
 
+
 class Model
 {
 
@@ -7,7 +8,8 @@ class Model
     private $pdo;
     private $query;
     private $helper;
-    public function __construct(Connection $connection)
+    private $jwt;
+    public function __construct(Database $connection)
     {
         $this->connection = $connection;
         $this->pdo = $this->connection->getPDO();
@@ -15,6 +17,7 @@ class Model
         $this->date = CommonFunctions::getDate('1 hour');
         $this->query = new QueryBuilder($this->connection->getPDO());
         $this->helper = new Helper($this->connection->getPDO());
+        $this->jwt = new JWTHandler();
     }
 
 
@@ -82,10 +85,16 @@ class Model
                         'msg' => "Your account has been banned, you cannot login to your account."
                     ];
                 } else {
+                    $token = $this->jwt->generateToken([
+                        'userid' => $user["userid"],
+                        "fullname" => $user["dfullname"],
+                        'email' => $user["demail"],
+                        'phone' => $user["dphone"]
+                    ]);
                     $data = [
                         "accessCode" => 'GRANTED',
                         "data" => $result,
-
+                        'token' => $token,
                     ];
                 }
             } else {
@@ -195,7 +204,7 @@ class Model
 
         if ($user) {
 
-            $data = [
+            $result = [
                 "userid" => $user["userid"],
                 "firstname" => $user["dfirstname"],
                 "lastname" => $user["dlastname"],
@@ -218,9 +227,19 @@ class Model
                 "accountNumber" => $user["accountNumber"],
                 "bankName" => $user["bankName"],
                 "accountStatus" => $user["account_status"],
-                "status" => 'verified',
+                "status" => 'active',
             ];
             $this->helper->update("dlogin", ["dstatus" => 'active'], ["userid" => $userid]);
+            $token = $this->jwt->generateToken([
+                'userid' => $user["userid"],
+                "fullname" => $user["dfullname"],
+                'email' => $user["demail"],
+                'phone' => $user["dphone"]
+            ]);
+            $data = [ 
+                "data" => $result,
+                'token' => $token,
+            ];
         } else {
             http_response_code(400);
             $data = [

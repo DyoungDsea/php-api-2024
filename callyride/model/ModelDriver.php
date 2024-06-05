@@ -195,7 +195,7 @@ class ModelDriver
     }
 
 
-    public function markJobStatus(array $data, array $clause)
+    public function updateChanges(array $data, array $clause)
     {
 
         if ($this->helper->update('manage_bookings', $data, $clause)) {
@@ -237,29 +237,45 @@ class ModelDriver
 
     public function getDriverPendingJob(string $id)
     {
-        $user =  $this->query->read("manage_bookings")
+        $row =  $this->query->read("manage_bookings")
             ->where(['driver_id' => $id, "driver_status" => 'pending'])
             ->orderBy("id DESC")
             ->limit(1)
             ->get("*", false);
 
-        if (!empty($user)) {
+        if (!empty($row)) {
+            //TODO: GET THE VEHICLE CATEGORY 
+            $categoryId = $row["car_category"];
+            $category = $this->helper->getSingleRecord('drive_categories', "WHERE dcategory = '$categoryId'");
+            $catData = [
+                "dcategory" => $category["dcategory"],
+                "dpercent" => $category["dpercent"],
+                "start_fee" => $category["start_fee"],
+                "km_fee" => $category["km_fee"],
+                "minute_fee" => $category["minute_fee"],
+                "hourly_fee" => $category["hourly_fee"],
+                "dpercent_hourly" => $category["dpercent_hourly"],
+            ];
+
             $result = [
-                "id" => $user["id"],
-                "customerName" => $user["customer_name"],
-                "customerPhone" => $user["phone_number"],
-                "customerAddress" => $user["email_address"],
-                "pickupAddress" => $user["pickup_address"],
-                "dropoffAddress" => $user["dropoff_address"],
-                "pickupLat" => $user["pickup_lat"],
-                "pickupLong" => $user["pickup_long"],
-                "dropoffLat" => $user["dropoff_lat"],
-                "dropoffLong" => $user["dropoff_long"],
-                "driverName" => $user["driver_name"],
-                "cost" => CommonFunctions::withNaira($user["dtotal"]),
-                "status" => $user["status"],
-                "dateCreated" => CommonFunctions::formatDated($user["date_created"]),
-                "timeCreated" => CommonFunctions::formatTime($user["date_created"]),
+                "id" => $row["id"],
+                "customerName" => $row["customer_name"],
+                "customerPhone" => $row["phone_number"],
+                "customerAddress" => $row["email_address"],
+                "pickupAddress" => $row["pickup_address"],
+                "dropoffAddress" => $row["dropoff_address"],
+                "pickupLat" => $row["pickup_lat"],
+                "pickupLong" => $row["pickup_long"],
+                "dropoffLat" => $row["dropoff_lat"],
+                "dropoffLong" => $row["dropoff_long"],
+                "driverName" => $row["driver_name"],
+                "cost" => CommonFunctions::withNaira($row["dtotal_actual"]),
+                "status" => $row["status"],
+                "dateCreated" => CommonFunctions::formatDated($row["date_created"]),
+                "timeCreated" => CommonFunctions::formatTime($row["date_created"]),
+                "data" => $catData
+
+
             ];
         } else {
             http_response_code(400);
