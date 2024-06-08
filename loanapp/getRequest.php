@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         echo json_encode($model->getTotalLoans($userid));
     }
 
-    if (isset($_GET['result']) and $_GET['result'] == 'resendToken') {
+    if (isset($_GET['result']) and $_GET['result'] == 'resendToken') {        
         echo json_encode($model->resendToken($userid));
     }
 

@@ -38,6 +38,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
 
     //TODO: MARK JOB STATUS
+    if (isset($jsonData->Message) and $jsonData->Message == 'cancelledTrip') {
+        $id = CommonFunctions::clean($jsonData->tripId);
+        $message = CommonFunctions::clean($jsonData->message);
+        $data = [ "status" => 'cancelled' ];
+        echo json_encode($modelDriver->updateChanges($data, ["id" => $id]));
+    }
+
+    //TODO: MARK JOB STATUS
+    if (isset($jsonData->Message) and $jsonData->Message == 'hasArrived') {
+        $id = CommonFunctions::clean($jsonData->tripId);
+        $message = CommonFunctions::clean($jsonData->message);
+        $data = [ "driverHasArrived" => 'yes' ];
+        echo json_encode($modelDriver->updateChanges($data, ["id" => $id]));
+    }
+
+
+    //TODO: MARK JOB STATUS
     if (isset($jsonData->Message) and $jsonData->Message == 'endTrip') {
         $id = CommonFunctions::clean($jsonData->tripId);
         $cost = CommonFunctions::clean($jsonData->cost);

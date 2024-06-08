@@ -1,12 +1,17 @@
 <?php
 
-require_once './require.php';
-
-require './vendor/autoload.php';
-
-
+require_once __DIR__ . '/require.php';
 
 $uploadPath = 'uploads/';
+
+//TODO VALIDATE TOKEN BEFORE GRANTING ACCESS TO ANY DATA
+$token =  CommonFunctions::getBearerToken();
+$rest =  $jwtHandler->validateToken($token);
+if ($rest == false) {
+    echo json_encode(array('status' => 'error', 'message' => 'Invalid Token'));
+    die;
+}
+
 
 //TODO: POST REQUEST 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -23,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $department = CommonFunctions::clean($_POST['department']);
         $designation = CommonFunctions::clean($_POST['designation']);
         $resident = CommonFunctions::clean($_POST['resident']);
-        $userid = CommonFunctions::clean($_POST['userid']);
+        $userid = CommonFunctions::clean($rest['userid']);
 
         // $oldSlip = CommonFunctions::clean($_POST['oldSlip']);
         // $oldPassport = CommonFunctions::clean($_POST['oldPassport']);
@@ -48,13 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $uploadPath = '../uploads/'; // Specify your upload directory
             $uploadedFile = $_FILES['slip'];
             $filename = $uploadedFile['name'];
-            $basename = basename($filename); 
+            $basename = basename($filename);
             $extention = pathinfo($basename, PATHINFO_EXTENSION);
 
             $rename = hash("SHA256", time() . rand(12345, 67890)) . '.' . $extention;
             $tmpName =  $uploadedFile['tmp_name'];
-            $img = Intervention\Image\ImageManagerStatic::make($tmpName); 
-            $img->save($uploadPath .$rename);
+            $img = Intervention\Image\ImageManagerStatic::make($tmpName);
+            $img->save($uploadPath . $rename);
             $pathSave = "uploads/$rename";
             $imageUpload = [
                 "paymentSlip" => $pathSave,
@@ -75,8 +80,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $rename = hash("SHA256", rand(12345, 67890)) . '.' . $extention;
             $tmpName =  $uploadedFile['tmp_name'];
-            $img = Intervention\Image\ImageManagerStatic::make($tmpName); 
-            $img->save($uploadPath .$rename);
+            $img = Intervention\Image\ImageManagerStatic::make($tmpName);
+            $img->save($uploadPath . $rename);
             $pathSave = "uploads/$rename";
             $imageUpload = [
                 "dpassport" => $pathSave,

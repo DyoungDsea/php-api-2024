@@ -1,5 +1,5 @@
 <?php
-require_once './require.php';
+require_once __DIR__ . '/require.php';
 $jsonData = json_decode(file_get_contents("php://input"));
 
 //TODO: POST REQUEST
@@ -42,12 +42,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     //TODO: APPLY FOR LOAN
     if (isset($jsonData->Message) and $jsonData->Message == 'applyForLoan') {
+        //TODO VALIDATE TOKEN BEFORE GRANTING ACCESS TO ANY DATA
+        $token =  CommonFunctions::getBearerToken();
+        $rest =  $jwtHandler->validateToken($token);
+        if ($rest == false) {
+            echo json_encode(array('status' => 'error', 'message' => 'Invalid Token'));
+            die;
+        }
 
-        $userid = CommonFunctions::clean($jsonData->userid); 
+
+        $userid = CommonFunctions::clean($rest['userid']);
+        $fullname = CommonFunctions::clean($rest['fullname']);
+        $phone = CommonFunctions::clean($rest['phone']);
+        $email = CommonFunctions::clean($rest['email']);
+
         $gross = CommonFunctions::clean($jsonData->gross);
         $net = CommonFunctions::clean($jsonData->net);
         $amountApply = CommonFunctions::clean($jsonData->amountApply);
-        $amountInWords = CommonFunctions::clean($jsonData->amountInWords);
 
         $level = CommonFunctions::clean($jsonData->level);
         $amountSpread = CommonFunctions::clean($jsonData->amountSpread);
@@ -57,21 +68,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $available = CommonFunctions::clean($jsonData->available);
         $StartDate = CommonFunctions::clean($jsonData->startDate);
 
-        
-        $fullname = CommonFunctions::clean($jsonData->fullname);
-        $phone = CommonFunctions::clean($jsonData->phone);
-        $email = CommonFunctions::clean($jsonData->email);
+
+
 
         $totalBalance = ($amountApply + $totalInterest);
 
-       
 
-        $data = [            
+
+        $data = [
             "rid" => CommonFunctions::generateUniqueID(),
-            "userid" => $userid, 
+            "userid" => $userid,
             "grossMonthly" => $gross,
             "netMonthly" => $net,
-            "amountApply" => $amountApply, 
+            "amountApply" => $amountApply,
             "dlevel" => $level,
             "amountRequest" => $amountApply,
             "amountSpread" => $amountSpread,
@@ -95,6 +104,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pass = CommonFunctions::clean($jsonData->pass);
         echo json_encode($model->login($user, $pass));
     }
+
+    if (isset($jsonData->Message) and $jsonData->Message == 'letterRequest') {
+        //TODO VALIDATE TOKEN BEFORE GRANTING ACCESS TO ANY DATA
+        $token =  CommonFunctions::getBearerToken();
+        $rest =  $jwtHandler->validateToken($token);
+        if ($rest == false) {
+            echo json_encode(array('status' => 'error', 'message' => 'Invalid Token'));
+            die;
+        }
+
+        $userid = CommonFunctions::clean($rest['userid']);
+        $fullname = CommonFunctions::clean($rest['fullname']);
+        $phone = CommonFunctions::clean($rest['phone']);
+        $email = CommonFunctions::clean($rest['email']);
+        $letter = CommonFunctions::clean($jsonData->letter);
+        $type = CommonFunctions::clean($jsonData->type);
+
+        $data = [
+            "lid"=> CommonFunctions::generateUniqueID(),
+            "userid" => $userid,
+            "dletter" => $letter,
+            "dstate" => $type,
+            "ddate" => CommonFunctions::getDateTime(1),
+        ];
+
+
+    }
 }
 
 
@@ -107,22 +143,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $email = CommonFunctions::clean($jsonData->email);
 
         echo json_encode($model->resetPassword($email, $token, $pass));
+        die;
     }
 
     //TODO: VERIFY ACCOUNT
     if (isset($jsonData->Message) and $jsonData->Message == 'verifyAccount') {
-        $userid = CommonFunctions::clean($jsonData->userid);
         $pin = CommonFunctions::clean($jsonData->pin);
+        $userid = CommonFunctions::clean($jsonData->userid);
         echo json_encode($model->verifyAccount($userid, $pin));
+        die;
     }
+
+    //TODO VALIDATE TOKEN BEFORE GRANTING ACCESS TO ANY DATA
+    $token =  CommonFunctions::getBearerToken();
+    $rest =  $jwtHandler->validateToken($token);
+    if ($rest == false) {
+        echo json_encode(array('status' => 'error', 'message' => 'Invalid Token'));
+        die;
+    }
+
+    $userid = CommonFunctions::clean($rest['userid']);
+    $fullname = CommonFunctions::clean($rest['fullname']);
+    $phone = CommonFunctions::clean($rest['phone']);
+    $email = CommonFunctions::clean($rest['email']);
+
+
 
     //TODO: CHANGE PASSWORD
     if (isset($jsonData->Message) and $jsonData->Message == 'changePassword') {
 
         $current = CommonFunctions::clean($jsonData->current);
         $pass = CommonFunctions::clean($jsonData->pass);
-        $userid = CommonFunctions::clean($jsonData->userid);
-
         echo json_encode($model->changePassword($userid, $current, $pass));
     }
 
@@ -151,7 +202,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $accountName = CommonFunctions::clean($jsonData->accountName);
         $accountNumber = CommonFunctions::clean($jsonData->accountNumber);
         $bankName = CommonFunctions::clean($jsonData->bankName);
-        $userid = CommonFunctions::clean($jsonData->userid);
 
         $data = [
             "accountName" => $accountName,

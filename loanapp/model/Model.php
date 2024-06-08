@@ -137,6 +137,10 @@ class Model
             ";
             CommonFunctions::sendMail($msg, $email, $subject);
             $this->helper->update("dlogin", ["dpin" => $pin], ["userid" => $userid]);
+            $data = [
+                'ACCESS_CODE' => 'Success',
+                'msg' => "Token has been sent to your account"
+            ];
         } else {
             http_response_code(400);
             $data = [
@@ -158,7 +162,7 @@ class Model
         if (!empty($result)) {
             $data = [
                 "totalApply" => is_null($result["total"]) ? '0' : $result["total"],
-                "getPendng" => is_null($getPendng["dstatus"]) ? '' : $getPendng["dstatus"],
+                "getPendng" => empty($getPendng["dstatus"]) ? '' : $getPendng["dstatus"],
             ];
         }
         return  $data;
@@ -204,7 +208,7 @@ class Model
 
         if ($user) {
 
-            $result = [
+            $data = [
                 "userid" => $user["userid"],
                 "firstname" => $user["dfirstname"],
                 "lastname" => $user["dlastname"],
@@ -230,16 +234,6 @@ class Model
                 "status" => 'active',
             ];
             $this->helper->update("dlogin", ["dstatus" => 'active'], ["userid" => $userid]);
-            $token = $this->jwt->generateToken([
-                'userid' => $user["userid"],
-                "fullname" => $user["dfullname"],
-                'email' => $user["demail"],
-                'phone' => $user["dphone"]
-            ]);
-            $data = [ 
-                "data" => $result,
-                'token' => $token,
-            ];
         } else {
             http_response_code(400);
             $data = [
@@ -338,10 +332,20 @@ class Model
                     <P>Use this code <b>$pin</b> to verify your account.</P>                    
                     ";
                     CommonFunctions::sendMail($msg, $email, $subject);
+
+                    $token = $this->jwt->generateToken([
+                        'userid' => $data["userid"],
+                        "fullname" => $data["dfullname"],
+                        'email' => $data["demail"],
+                        'phone' => $data["dphone"]
+                    ]);
                     $result = [
-                        'accessCode' => 'GRANTED',
-                        "userid" => $data['userid'],
-                        'msg' => "Verify your account with the code sent to your email address or phone number."
+                        'token' => $token,
+                        'data' => [
+                            'accessCode' => 'GRANTED',
+                            'userid' => $data["userid"],
+                            'msg' => "Verify your account with the code sent to your email address or phone number."
+                        ],
                     ];
                 } else {
                     http_response_code(400);
