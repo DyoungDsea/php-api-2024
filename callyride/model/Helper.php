@@ -71,6 +71,17 @@ class Helper
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function getSingleRecordWithSelector($tableName,  $selector = "*", $clause = '')
+    {
+        $query = "SELECT $selector FROM $tableName";
+        if (!empty($clause)) {
+            $query .= " $clause";
+        }
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     public function imagesUpload($fileName, $id = '', $x = 400, $y = 400)
     {
 
@@ -167,9 +178,9 @@ class Helper
 
     public  function getClosestDriver($lat, $lon, $distance)
     {
-
+        // "carVerification"=>'verified'
         // Haversine formula SQL query to find the closest driver
-        $sql = "SELECT driver_id, driver_name, phone_number, driver_latitude, driver_longitude, car_type, driver_photo, plateNumber, car_category,  (6371 * acos(cos(radians(:lat)) * cos(radians(driver_latitude)) * cos(radians(driver_longitude) - radians(:lon)) + sin(radians(:lat)) *  sin(radians(driver_latitude)))) AS distance FROM manage_drivers WHERE availability='Free' ORDER BY distance ASC LIMIT 1";
+        $sql = "SELECT driver_id, driver_name, phone_number, driver_latitude, driver_longitude, car_type, driver_photo, plateNumber, car_category,  (6371 * acos(cos(radians(:lat)) * cos(radians(driver_latitude)) * cos(radians(driver_longitude) - radians(:lon)) + sin(radians(:lat)) *  sin(radians(driver_latitude)))) AS distance FROM manage_drivers WHERE availability='Free' AND carVerification='verified' ORDER BY distance ASC LIMIT 1";
         // $sql = "SELECT driver_id, driver_name, phone_number, driver_latitude, driver_longitude, car_type, driver_photo, plateNumber, car_category,  (6371 * acos(cos(radians(:lat)) * cos(radians(driver_latitude)) * cos(radians(driver_longitude) - radians(:lon)) + sin(radians(:lat)) *  sin(radians(driver_latitude)))) AS distance FROM manage_drivers WHERE availability='Free' HAVING distance <= :distance ORDER BY distance ASC LIMIT 1";
 
 

@@ -27,6 +27,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     }
 
     if (isset($_GET['terms'])) {
-        echo json_encode($model->terms());
+        echo json_encode($model->getData('dterms'));
+    }
+
+    if (isset($_GET['about'])) {
+        echo json_encode($model->getData('dabout'));
+    }
+
+    if (isset($_GET['privacy'])) {
+        echo json_encode($model->getData('dprivacy'));
+    }
+
+    if (isset($_GET['works'])) {
+        echo json_encode($model->getData('dworks'));
     }
 }

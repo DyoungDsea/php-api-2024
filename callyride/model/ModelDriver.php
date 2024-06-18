@@ -139,6 +139,45 @@ class ModelDriver
     }
 
 
+    public function forgotPassword(string $email)
+    {
+        //TODO: Check if email exist
+        $userEmail =  $this->query->read('manage_drivers')
+            ->where(['email_address' => $email])
+            ->get('email_address, driver_name', false);
+
+        if (!empty($userEmail)) {
+            //TODO: Send security code
+            $rand = rand(1234, 5678);
+            $subject = "Reset Password";
+            $name = $userEmail['driver_name'];
+            $mailTemplate = "
+            <b>Dear $name,</b> <br>
+            <p>Use this code <b>$rand</b> to reset your password</p>
+            <p>Kindly ignore this if the request is not from you</p>
+            ";
+
+            $test = "emailController/mailTemplate.php";
+            include 'emailController/mailTemplateApi.php';
+
+            $this->helper->update('manage_drivers', ["vcode" => $rand], ["email_address" => $email]);
+            $result = [
+                'ACCESS_CODE' => 'GRANTED',
+                'user' => null,
+                'msg' => "Reset code has been sent to your email."
+            ];
+        } else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'user' => null,
+                'msg' => "Sorry, Email address does not exist."
+            ];
+        }
+
+        return $result;
+    }
+
     public function changePassword($userid, $oldPass, $newPass)
     {
 
@@ -537,6 +576,50 @@ class ModelDriver
         }
         // print_r($job);
 
+
+        return $result;
+    }
+
+
+    public function driverLatLng($driverid)
+    {
+        $row = $this->helper->getSingleRecordWithSelector("manage_drivers", 'driver_latitude, driver_longitude', " WHERE driver_id='$driverid'");
+        $result = [];
+        if (!empty($row)) {
+            $result = [
+                "driverLat" => $row["driver_latitude"],
+                "driverLng" => $row["driver_longitude"],
+            ];
+        }
+
+        return $result;
+    }
+    public function checkStatus($id)
+    {
+        $row = $this->helper->getSingleRecordWithSelector("manage_bookings", 'driver_status,status', " WHERE id='$id'");
+        $result = [];
+        if (!empty($row)) {
+            $result = [
+                "status" => $row["status"], 
+                "driveStatus" => $row["driver_status"], 
+            ];
+        }
+
+        return $result;
+    }
+
+    public function completedJobStatus($id)
+    {
+        $row = $this->helper->getSingleRecordWithSelector("manage_bookings", 'driver_status,status,dtotal, dtotal_actual', " WHERE id='$id'");
+        $result = [];
+        if (!empty($row)) {
+            $result = [
+                "status" => $row["status"], 
+                "driveStatus" => $row["driver_status"], 
+                "actualTotal" => number_format($row["dtotal_actual"]), 
+                "total" => $row["dtotal"], 
+            ];
+        }
 
         return $result;
     }

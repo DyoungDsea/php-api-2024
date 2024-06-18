@@ -31,6 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pass = CommonFunctions::clean($jsonData->pass);
         echo json_encode($modelDriver->login($user, $pass));
     }
+
+    //TODO: FORGOT PASSWORD
+    if (isset($jsonData->Message) and $jsonData->Message == 'forgot') {
+        $email = CommonFunctions::clean($jsonData->email);
+        echo json_encode($modelDriver->forgotPassword($email));
+    }
 }
 
 
@@ -41,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     if (isset($jsonData->Message) and $jsonData->Message == 'cancelledTrip') {
         $id = CommonFunctions::clean($jsonData->tripId);
         $message = CommonFunctions::clean($jsonData->message);
-        $data = [ "status" => 'cancelled' ];
+        $data = ["status" => 'cancelled'];
         echo json_encode($modelDriver->updateChanges($data, ["id" => $id]));
     }
 
@@ -49,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     if (isset($jsonData->Message) and $jsonData->Message == 'hasArrived') {
         $id = CommonFunctions::clean($jsonData->tripId);
         $message = CommonFunctions::clean($jsonData->message);
-        $data = [ "driverHasArrived" => 'yes' ];
+        $data = ["driverHasArrived" => 'yes'];
         echo json_encode($modelDriver->updateChanges($data, ["id" => $id]));
     }
 
@@ -64,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $driverid = CommonFunctions::clean($jsonData->userid);
 
         $data = [
+            "driver_status" => 'completed',
             "status" => 'completed',
             "dtotal" => $cost,
             "dropoff_address" => $currentAddress,

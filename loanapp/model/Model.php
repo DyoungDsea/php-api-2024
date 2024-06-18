@@ -448,6 +448,29 @@ class Model
         return $data;
     }
 
+    public function letterRequest(string $email, string $name, array $data)
+    {
+        $letter = $data['dletter'];
+        if ($this->helper->create("dletter", $data)) {
+            $subject = "LETTER REQUEST | SAMOGOZA";
+            $msg = "
+            <b>Dear $name,</b>
+            <P>Your request for <b>$letter</b> has been received, 
+            your letter will be sent to this email once the admin confirm your request.</P>                    
+            ";
+            CommonFunctions::sendMail($msg, $email, $subject);
+            $data = [
+                'accessCode' => 'SUCCESS',
+                'msg' => "Message sent to your email."
+            ];
+        }else{
+            http_response_code(400);
+            $data = [
+                'accessCode' => 'DENIED',
+                'msg' => "Sorry, Something went wrong."
+            ];
+        }
+    }
 
     public function updatePersonalDetails(array $data, array $clause)
     {
@@ -503,14 +526,14 @@ class Model
         return $result;
     }
 
-    public function terms()
+    public function getData(string $table)
     {
-        $row =  $this->query->read('terms')
+        $row =  $this->query->read($table)
             ->get('*', false);
 
         if (!empty($row)) {
             $result = [
-                "terms" => $row["terms"],
+                "text" => $row["text"],
             ];
         } else {
             http_response_code(400);

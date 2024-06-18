@@ -5,12 +5,29 @@ require_once './require.php';
 //TODO: GET REQUEST drive_categories
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
-
+    
     //TODO: fech all vehicle category
     if (isset($_GET['Message']) and $_GET['Message'] == 'category') {
         $distance = CommonFunctions::clean($_GET['distance']);
         $distance = str_replace(' km', '', $distance);
         echo json_encode($model->category($distance));
+    }
+
+    //TODO: fech driverLatLng
+    if (isset($_GET['Message']) and $_GET['Message'] == 'completedJobStatus') {
+        $id = CommonFunctions::clean($_GET['id']); 
+        echo json_encode($modelDriver->completedJobStatus($id));
+    }
+    //TODO: fech driverLatLng
+    if (isset($_GET['Message']) and $_GET['Message'] == 'checkStatus') {
+        $id = CommonFunctions::clean($_GET['id']); 
+        echo json_encode($modelDriver->checkStatus($id));
+    }
+
+    //TODO: fech driverLatLng
+    if (isset($_GET['Message']) and $_GET['Message'] == 'driverLatLng') {
+        $driverid = CommonFunctions::clean($_GET['driverid']); 
+        echo json_encode($modelDriver->driverLatLng($driverid));
     }
 
     //TODO: get Driver Pending Job

@@ -105,6 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode($model->login($user, $pass));
     }
 
+
+
     if (isset($jsonData->Message) and $jsonData->Message == 'letterRequest') {
         //TODO VALIDATE TOKEN BEFORE GRANTING ACCESS TO ANY DATA
         $token =  CommonFunctions::getBearerToken();
@@ -128,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "dstate" => $type,
             "ddate" => CommonFunctions::getDateTime(1),
         ];
-
+        echo json_encode($model->letterRequest($email, $fullname, $data));
 
     }
 }
