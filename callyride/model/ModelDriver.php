@@ -623,4 +623,59 @@ class ModelDriver
 
         return $result;
     }
+
+ 
+
+    public function checkOnGoing(string $id)
+    {
+        $row =  $this->query->read("manage_bookings")
+            ->where(['driver_id' => $id, "driver_status" => 'ongoing'])
+            ->orderBy("id DESC")
+            ->limit(1)
+            ->get("*", false);
+
+        if (!empty($row)) {
+            //TODO: GET THE VEHICLE CATEGORY 
+            $categoryId = $row["car_category"];
+            $category = $this->helper->getSingleRecord('drive_categories', "WHERE dcategory = '$categoryId'");
+            $catData = [
+                "dcategory" => $category["dcategory"],
+                "dpercent" => $category["dpercent"],
+                "start_fee" => $category["start_fee"],
+                "km_fee" => $category["km_fee"],
+                "minute_fee" => $category["minute_fee"],
+                "hourly_fee" => $category["hourly_fee"],
+                "dpercent_hourly" => $category["dpercent_hourly"],
+            ];
+
+            $result = [
+                "id" => $row["id"],
+                "customerName" => $row["customer_name"],
+                "customerPhone" => $row["phone_number"],
+                "customerAddress" => $row["email_address"],
+                "pickupAddress" => $row["pickup_address"],
+                "dropoffAddress" => $row["dropoff_address"],
+                "pickupLat" => $row["pickup_lat"],
+                "pickupLong" => $row["pickup_long"],
+                "dropoffLat" => $row["dropoff_lat"],
+                "dropoffLong" => $row["dropoff_long"],
+                "driverName" => $row["driver_name"],
+                "cost" => CommonFunctions::withNaira($row["dtotal_actual"]),
+                "status" => $row["status"],
+                "dateCreated" => CommonFunctions::formatDated($row["date_created"]),
+                "timeCreated" => CommonFunctions::formatTime($row["date_created"]),
+                "data" => $catData
+
+            ];
+        } else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "No ongoing job for you."
+            ];
+        }
+
+        return $result;
+    }
+
 }

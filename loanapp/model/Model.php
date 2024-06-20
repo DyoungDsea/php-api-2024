@@ -545,4 +545,31 @@ class Model
 
         return $result;
     }
+
+    public function loanRepayment(string $userid, string $rid)
+    {
+        $row =  $this->query->read('drepayment')
+        ->where(['userid' => $userid, 'requestId' => $rid])
+            ->get();
+
+        if (!empty($row)) {
+            $result = [];
+            foreach ($row as $value) {
+                $result[] = [
+                    "title" => $value["dtitle"],
+                    "amount" => $value["damount"],
+                    "payDate" => $value["smsDate"],
+                ];
+            }
+            
+        } else {
+            http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "Sorry, we\'re unable to fetch data."
+            ];
+        }
+
+        return $result;
+    }
 }

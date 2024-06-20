@@ -18,10 +18,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         $id = CommonFunctions::clean($_GET['id']); 
         echo json_encode($modelDriver->completedJobStatus($id));
     }
+
     //TODO: fech driverLatLng
     if (isset($_GET['Message']) and $_GET['Message'] == 'checkStatus') {
         $id = CommonFunctions::clean($_GET['id']); 
         echo json_encode($modelDriver->checkStatus($id));
+    }
+
+    //TODO: fech driverLatLng
+    if (isset($_GET['Message']) and $_GET['Message'] == 'checkOnGoing') {
+        $driverid = CommonFunctions::clean($_GET['driverid']); 
+        echo json_encode($modelDriver->checkOnGoing($driverid));
     }
 
     //TODO: fech driverLatLng
