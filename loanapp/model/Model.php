@@ -59,11 +59,20 @@ class Model
                 "accountStatus" => $user["account_status"],
                 "status" => $user["dstatus"],
             ];
+
+            $token = $this->jwt->generateToken([
+                'userid' => $user["userid"],
+                "fullname" => $user["dfullname"],
+                'email' => $user["demail"],
+                'phone' => $user["dphone"]
+            ]);
+
             if (hash_equals($hashedPassword, $user["dpassword"])) {
                 //TODO: CHECK THE STATUS OF THE ACCOUNT
                 if ($user["dstatus"] == 'pending') {
                     $name = $user["dfirstname"];
                     $userid = $user["userid"];
+                    $phone = $user["dphone"];
                     $pin = rand(1234, 5678);
                     //TODO: SEND PIN TO EMAIL & SMS
                     $subject = "Verification | SAMOGOZA";
@@ -71,26 +80,28 @@ class Model
                     <b>Dear $name,</b>  welcome to SAMOGOZA LTD.
                     <P>Use this code <b>$pin</b> to verify your account.</P>                    
                     ";
-                    CommonFunctions::sendMail($msg, $email, $subject);
+                    $textMessage = "Your verification code is $pin";
+                    CommonFunctions::sendMessage($phone, $textMessage);
+                    // CommonFunctions::sendMail($msg, $email, $subject);
+
+                    $template = __DIR__ . "/emailController/mailTemplate.php";
+                    EmailSender::sendEmail($email, $name, $subject, $template, $msg);
                     $this->helper->update("dlogin", ["dpin" => $pin], ["userid" => $userid]);
-                    // http_response_code(401);
+
                     $data = [
                         'accessCode' => 'VERIFICATION',
                         "data" => $result,
+                        'token' => $token,
                     ];
                 } elseif ($user["dstatus"] == 'banned') {
                     http_response_code(400);
                     $data = [
                         'ACCESS_CODE' => 'DENIED',
+                        'token' => '',
                         'msg' => "Your account has been banned, you cannot login to your account."
                     ];
                 } else {
-                    $token = $this->jwt->generateToken([
-                        'userid' => $user["userid"],
-                        "fullname" => $user["dfullname"],
-                        'email' => $user["demail"],
-                        'phone' => $user["dphone"]
-                    ]);
+
                     $data = [
                         "accessCode" => 'GRANTED',
                         "data" => $result,
@@ -135,7 +146,11 @@ class Model
             <b>Dear $name,</b>  welcome to SAMOGOZA LTD.
             <P>Use this code <b>$pin</b> to verify your account.</P>                    
             ";
-            CommonFunctions::sendMail($msg, $email, $subject);
+            // CommonFunctions::sendMail($msg, $email, $subject);
+
+            $template = __DIR__ . "/emailController/mailTemplate.php";
+            EmailSender::sendEmail($email, $name, $subject, $template, $msg);
+
             $this->helper->update("dlogin", ["dpin" => $pin], ["userid" => $userid]);
             $data = [
                 'ACCESS_CODE' => 'Success',
@@ -180,7 +195,8 @@ class Model
         if (!empty($result)) {
             foreach ($result as $row) {
                 $data[] = [
-                    "dduration" => $row['dduration'],
+                    "rid" => $row['rid'],
+                    "duration" => $row['dduration'],
                     "amountApply" => $row['amountApply'],
                     "amountRequest" => $row['amountRequest'],
                     "amountSpread" => $row['amountSpread'],
@@ -250,20 +266,25 @@ class Model
         //TODO: Check if email exist
         $userEmail =  $this->query->read('dlogin')
             ->where(['demail' => $email])
-            ->get('demail, dfirstname, dstatus', false);
+            ->get('demail, dfirstname, dphone, dstatus', false);
 
         if (!empty($userEmail) && $userEmail['dstatus'] == 'active') {
             //TODO: Send security code
             $rand = rand(1234, 5678);
             $subject = "Reset Password";
             $name = $userEmail['dfirstname'];
+            $phone = $userEmail['dphone'];
             $msg = "
             <b>Dear $name,</b> <br>
             <p>Use this code <b>$rand</b> to reset your password</p>
             <p>Kindly ignore this if the request is not from you</p>
             ";
+            $textMessage = "Use this code $rand to reset your password";
+            CommonFunctions::sendMessage($phone, $textMessage);
+            // CommonFunctions::sendMail($msg, $email, $subject);
 
-            CommonFunctions::sendMail($msg, $email, $subject);
+            $template = __DIR__ . "/emailController/mailTemplate.php";
+            EmailSender::sendEmail($email, $name, $subject, $template, $msg);
 
             $this->helper->update('dlogin', ["dpin" => $rand], ["demail" => $email]);
             $result = [
@@ -331,6 +352,12 @@ class Model
                     <b>Dear $name,</b>  welcome to SAMOGOZA LTD.
                     <P>Use this code <b>$pin</b> to verify your account.</P>                    
                     ";
+
+                    $textMessage = "Use this code $pin to verify your account";
+                    CommonFunctions::sendMessage($phone, $textMessage);
+
+                    $template = __DIR__ . "/emailController/mailTemplate.php";
+                    EmailSender::sendEmail($email, $name, $subject, $template, $msg);
                     CommonFunctions::sendMail($msg, $email, $subject);
 
                     $token = $this->jwt->generateToken([
@@ -437,7 +464,15 @@ class Model
             <P>Your request for a loan of <b>$amount</b> has been received, 
             you will receive a message once your loan request has been approved.</P>                    
             ";
-            CommonFunctions::sendMail($msg, $email, $subject);
+
+            $textMessage = "$name has requested for a loan of $amount";
+            CommonFunctions::sendMessage("", $textMessage);
+
+
+            $template = __DIR__ . "/emailController/mailTemplate.php";
+            EmailSender::sendEmail($email, $name, $subject, $template, $msg);
+
+            // CommonFunctions::sendMail($msg, $email, $subject);
         } else {
             http_response_code(400);
             $data = [
@@ -463,7 +498,7 @@ class Model
                 'accessCode' => 'SUCCESS',
                 'msg' => "Message sent to your email."
             ];
-        }else{
+        } else {
             http_response_code(400);
             $data = [
                 'accessCode' => 'DENIED',
@@ -549,7 +584,7 @@ class Model
     public function loanRepayment(string $userid, string $rid)
     {
         $row =  $this->query->read('drepayment')
-        ->where(['userid' => $userid, 'requestId' => $rid])
+            ->where(['userid' => $userid, 'requestId' => $rid])
             ->get();
 
         if (!empty($row)) {
@@ -561,7 +596,6 @@ class Model
                     "payDate" => $value["smsDate"],
                 ];
             }
-            
         } else {
             http_response_code(400);
             $result = [

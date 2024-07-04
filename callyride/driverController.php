@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "driver_name" => "$fname $lname",
             "phone_number" => $phone,
             "email_address" => $email,
+            "vcode" => rand(1234, 5678),
             "password" => md5($pass)
         ];
 
@@ -88,7 +89,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         if ($status == 'accepted') {
             $data = ["driver_status" => 'accepted'];
         } else {
-            $data = ["driver_status" => 'rejected'];
+            $data = [
+                "driver_id" => NULL,
+                "driver_name" => NULL,
+                "phone_number" => NULL,
+                "car_type" => NULL,
+                "car_category" => NULL,
+                "driver_photo" => NULL,
+                "plateNumber" => NULL,
+                "driver_status" => 'pending'
+            ]; 
         }
 
         echo json_encode($modelDriver->updateChanges($data, ["id" => $id]));
@@ -173,5 +183,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         ];
 
         echo json_encode($modelDriver->updateVehicleInfo($data, ["driver_id" => $userid]));
+    }
+
+     //TODO: VERIFY ACCOUNT
+     if (isset($jsonData->Message) and $jsonData->Message == 'verifyAccount') {
+        $pin = CommonFunctions::clean($jsonData->pin);
+        $driverid = CommonFunctions::clean($jsonData->driverid);
+        echo json_encode($modelDriver->verifyAccount($driverid, $pin));
+        
     }
 }

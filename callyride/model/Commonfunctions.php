@@ -66,4 +66,11 @@ class CommonFunctions
         $orderID = 'ORD' . $timestamp . $randomNumber;
         return $orderID;
     }
+
+    public static function sendMail($mailTemplate, $email, $subject)
+    {
+        $test = __DIR__ . "/emailController/mailTemplate.php";
+        require __DIR__ . "/emailController/mailTemplateApi.php";
+    }
+
 }

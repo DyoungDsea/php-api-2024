@@ -120,14 +120,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fullname = CommonFunctions::clean($rest['fullname']);
         $phone = CommonFunctions::clean($rest['phone']);
         $email = CommonFunctions::clean($rest['email']);
-        $letter = CommonFunctions::clean($jsonData->letter);
-        $type = CommonFunctions::clean($jsonData->type);
+        $letter = CommonFunctions::clean($jsonData->letter); 
 
         $data = [
             "lid"=> CommonFunctions::generateUniqueID(),
             "userid" => $userid,
             "dletter" => $letter,
-            "dstate" => $type,
+            "dstate" => "Letter of indetedness",
             "ddate" => CommonFunctions::getDateTime(1),
         ];
         echo json_encode($model->letterRequest($email, $fullname, $data));

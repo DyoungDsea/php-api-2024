@@ -36,21 +36,38 @@ class ModelDriver
         if ($user) {
             $hashedPassword = md5($password);
             if ($hashedPassword  === $user['password']) {
-                $data = [
-                    "driverId" => $user["driver_id"],
-                    "driverName" => $user["driver_name"],
-                    "phoneNumber" => $user["phone_number"],
-                    "emailAddress" => $user["email_address"],
-                    "contactAddress" => empty($user["daddress"]) ? "" : $user["daddress"],
-                    "licenseNumber" => empty($user["licenseNumber"]) ? "" : $user["licenseNumber"],
-                    "frontView" => empty($user["frontView"]) ? "" : $user["frontView"],
-                    "lastupdate" => empty($user["lastupdate"]) ? "" : $user["lastupdate"],
-                    "walletBalance" => $user["wallet_balance"],
-                    "carVerification" => $user["carVerification"],
-                    "driverLicenceFront" => !empty($user["driverLicenceFront"]) ? $user["driverLicenceFront"] : "",
-                    "engineView" => !empty($user["engineView"]) ? $user["engineView"] : ""
+                include './result.php';
+                
+                if ($user["status"] == 'pending') {
+                    $name = $user["driver_name"];
+                    $driver_id = $user["driver_id"];
+                    $pin = rand(1234, 5678);
+                    //TODO: SEND PIN TO EMAIL & SMS
+                    $subject = "Verification | CallyRiver";
+                    $msg = "
+                        <b>Dear $name,</b>  welcome to CallyRiver.
+                        <P>Use this code <b>$pin</b> to verify your account.</P>                    
+                        ";
+                    CommonFunctions::sendMail($msg, $email, $subject);
+                    $this->helper->update("manage_drivers", ["vcode" => $pin], ["driver_id" => $driver_id]);
+                    // http_response_code(401);
+                    $data = [
+                        'accessCode' => 'VERIFICATION',
+                        "data" => $result,
+                    ];
+                } elseif ($user["status"] == 'banned') {
+                    http_response_code(400);
+                    $data = [
+                        'ACCESS_CODE' => 'DENIED',
+                        'msg' => "Your account has been banned, you cannot login to your account."
+                    ];
+                } else {
 
-                ];
+                    $data = [
+                        "accessCode" => 'GRANTED',
+                        "data" => $result,
+                    ];
+                }
             } else {
                 http_response_code(400);
                 $data = [
@@ -77,6 +94,9 @@ class ModelDriver
     public function createNewDriver(string $email, string $phone, array $data)
     {
 
+        $name = $data['driver_name'];
+        $pin = $data['vcode'];
+
         $userEmail =  $this->query->read('manage_drivers')
             ->where(['email_address' => $email])
             ->get('email_address', false);
@@ -101,20 +121,20 @@ class ModelDriver
                     $user = $this->query->read('manage_drivers')
                         ->where(['email_address' => $email, "driver_id" => $driver_id])
                         ->get('*', false);
-                    $result = [
-                        "driverId" => $user["driver_id"],
-                        "driverName" => $user["driver_name"],
-                        "phoneNumber" => $user["phone_number"],
-                        "emailAddress" => $user["email_address"],
-                        "contactAddress" => empty($user["daddress"]) ? "" : $user["daddress"],
-                        "licenseNumber" => empty($user["licenseNumber"]) ? "" : $user["licenseNumber"],
-                        "frontView" => empty($user["frontView"]) ? "" : $user["frontView"],
-                        "lastupdate" => empty($user["lastupdate"]) ? "" : $user["lastupdate"],
-                        "walletBalance" => $user["wallet_balance"],
-                        "carVerification" => $user["carVerification"],
-                        "driverLicenceFront" => !empty($user["driverLicenceFront"]) ? $user["driverLicenceFront"] : "",
-                        "engineView" => !empty($user["engineView"]) ? $user["engineView"] : ""
 
+                    $subject = "Verification | CallyRiver";
+                    $msg = "
+                        <b>Dear $name,</b>  welcome to CallyRiver.
+                        <P>Use this code <b>$pin</b> to verify your account.</P>                    
+                        ";
+                    CommonFunctions::sendMail($msg, $email, $subject);
+
+                    $result = [
+                        'data' => [
+                            'accessCode' => 'GRANTED',
+                            'userid' => $driver_id,
+                            'msg' => "Verify your account with the code sent to your email address"
+                        ],
                     ];
                 }
             } else {
@@ -138,6 +158,28 @@ class ModelDriver
         return $result;
     }
 
+
+    //  TODO:VERIFY ACCOUNT
+    public function verifyAccount($driver_id, $pin)
+    {
+        $user = $this->query->read('manage_drivers')
+            ->where(["driver_id" => $driver_id, "vcode" => $pin])
+            ->get('*', false);
+
+        if ($user) {
+            include './result.php';
+            
+            $this->helper->update("manage_drivers", ["status" => 'active'], ["driver_id" => $driver_id]);
+        } else {
+            http_response_code(400);
+            $data = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "Sorry, invalid code provided."
+            ];
+        }
+
+        return $data;
+    }
 
     public function forgotPassword(string $email)
     {
@@ -600,8 +642,8 @@ class ModelDriver
         $result = [];
         if (!empty($row)) {
             $result = [
-                "status" => $row["status"], 
-                "driveStatus" => $row["driver_status"], 
+                "status" => $row["status"],
+                "driveStatus" => $row["driver_status"],
             ];
         }
 
@@ -614,22 +656,38 @@ class ModelDriver
         $result = [];
         if (!empty($row)) {
             $result = [
-                "status" => $row["status"], 
-                "driveStatus" => $row["driver_status"], 
-                "actualTotal" => number_format($row["dtotal_actual"]), 
-                "total" => $row["dtotal"], 
+                "status" => $row["status"],
+                "driveStatus" => $row["driver_status"],
+                "actualTotal" => number_format($row["dtotal_actual"]),
+                "total" => $row["dtotal"],
             ];
         }
 
         return $result;
     }
 
- 
+    public function fetchReason()
+    {
+        $rows = $this->query->read("dreasons")->get("*", true);
+        $result = [];
+        if (!empty($rows)) {
+            foreach ($rows as $row) {
+                $result[] = [
+                    "id" => $row["id"],
+                    "title" => $row["dtitle"],
+                ];
+            }
+        }
 
-    public function checkOnGoing(string $id)
+        return $result;
+    }
+
+
+
+    public function checkOnGoing(string $id, string $status)
     {
         $row =  $this->query->read("manage_bookings")
-            ->where(['driver_id' => $id, "driver_status" => 'ongoing'])
+            ->where(['driver_id' => $id, "driver_status" => $status])
             ->orderBy("id DESC")
             ->limit(1)
             ->get("*", false);
@@ -648,7 +706,7 @@ class ModelDriver
                 "dpercent_hourly" => $category["dpercent_hourly"],
             ];
 
-            $result = [
+            $data = [
                 "id" => $row["id"],
                 "customerName" => $row["customer_name"],
                 "customerPhone" => $row["phone_number"],
@@ -667,6 +725,10 @@ class ModelDriver
                 "data" => $catData
 
             ];
+            $result = [
+                'ACCESS_CODE' => 'GRANTED',
+                'data' =>  $data
+            ];
         } else {
             http_response_code(400);
             $result = [
@@ -677,5 +739,4 @@ class ModelDriver
 
         return $result;
     }
-
 }

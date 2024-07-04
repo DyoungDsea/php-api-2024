@@ -455,8 +455,60 @@ class Model
                 "plateNumber" => $booking['plateNumber'],
                 "driverLatitude" => $lat,
                 "driverLongitude" => $lng,
-                "lat"=>$userLat,
-                "long"=>$userLng,
+                "lat" => $userLat,
+                "long" => $userLng,
+            ];
+            $result = [
+                'ACCESS_CODE' => 'GRANTED',
+                'data' =>  $data
+            ];
+        } else {
+            // http_response_code(400);
+            $result = [
+                'ACCESS_CODE' => 'DENIED',
+                'msg' => "Searching for driver"
+            ];
+        }
+
+        return $result;
+    }
+
+    public function checkUserOnGoing($clause)
+    {
+        //TODO: GET LAST BOOKING
+        $booking =  $this->query->read('manage_bookings')
+            ->where($clause)
+            ->orderBy("id DESC")
+            ->limit(1)
+            ->get('id, driver_id, driver_name, driver_status, phone_number, car_type, car_category, driver_photo, plateNumber, pickup_lat, pickup_long ', false);
+        if (!empty($booking)) {
+            $driverid = $booking['driver_id'];
+            $driverLatLng = $this->helper->getSingleRecord("manage_drivers", " WHERE driver_id='$driverid'");
+            $lat = $driverLatLng['driver_latitude'];
+            $lng = $driverLatLng['driver_longitude'];
+
+            $userLat =  $booking['pickup_lat'];
+            $userLng =  $booking['pickup_long'];
+
+            //TODO: GET DISTANCE IN MINUTES
+            $distance = $this->helper->haversineDistance($userLat, $userLng, $lat, $lng);
+            $getMinutes = round($this->helper->calculateDrivingTime($distance, 60));
+            $bookingID = $booking['id'];
+            $data = [
+                "id" => "$bookingID",
+                "driverid" => $driverid,
+                "driverName" => $booking['driver_name'],
+                "driverPhone" => $booking['phone_number'],
+                "carName" => $booking['car_type'],
+                "carCategory" => $booking['car_category'],
+                "driverStatus" => $booking['driver_status'],
+                "getMinutes" => $getMinutes == 0 ? "1" : "$getMinutes",
+                "photo" => $booking['driver_photo'],
+                "plateNumber" => $booking['plateNumber'],
+                "driverLatitude" => $lat,
+                "driverLongitude" => $lng,
+                "lat" => $userLat,
+                "long" => $userLng,
             ];
             $result = [
                 'ACCESS_CODE' => 'GRANTED',
@@ -504,5 +556,28 @@ class Model
 
 
         return $result;
+    }
+
+    public function myRoute(string $userid): array
+    {
+        $routes = $this->query->read("manage_bookings")
+            ->where(['customer_id' => $userid])
+            ->groupBy('pickup_address, dropoff_address')
+            ->orderBy('id DESC')
+            ->limit(10)
+            ->get('pickup_address, dropoff_address, pickup_lat, pickup_long, dropoff_lat, dropoff_long');
+        $res = [];
+        foreach ($routes as $row) {
+            $res[] = [
+                "pickupAddress" => $row['pickup_address'],
+                "dropoffAddress" => $row['dropoff_address'],
+                "pickupLat" => $row['pickup_lat'],
+                "pickupLng" => $row['pickup_long'], 
+                "dropoffLat" => $row['dropoff_lat'],
+                "dropoffLng" => $row['dropoff_long'], 
+
+            ];
+        }
+        return $res;
     }
 }

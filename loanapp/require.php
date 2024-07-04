@@ -9,6 +9,7 @@ header('Content-Type: application/json');
 include_once __DIR__.'/siteSettings.php';
 include_once __DIR__.'/model/Database.php';
 include_once __DIR__.'/model/Commonfunctions.php';
+include_once __DIR__.'/model/EmailSender.php';
 include_once __DIR__.'/model/QueryBuilder.php';
 include_once __DIR__.'/model/Model.php'; 
 include_once __DIR__.'/model/Helper.php'; 
