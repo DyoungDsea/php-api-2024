@@ -56,10 +56,10 @@ class EmailSender
             $mail->addReplyTo('support@samogoza.com', 'Samogoza');
 
             // Recipient
-            $mail->addAddress($toEmail, $toName);      // Add a recipient
+            $mail->addAddress($toEmail, $toName);   
 
             // Content
-            $mail->isHTML(true);                       // Set email format to HTML
+            $mail->isHTML(true);                 
             $mail->Subject = $subject;
             $mail->Body    = $body;
             // $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';

@@ -73,8 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $totalBalance = ($amountApply + $totalInterest);
 
-
-
         $data = [
             "rid" => CommonFunctions::generateUniqueID(),
             "userid" => $userid,
@@ -92,8 +90,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "deductionDate" => $StartDate,
             "amountAvailable" => $amountSpread,
             "ddate" => CommonFunctions::getDateTime(1),
+            "searchDate" => date("Y-m-d"),
+            "processingFee" => '5000',
             "approveDate" => CommonFunctions::getDateTime(1),
-        ];
+        ]; 
+
+        
+        //TODO: PASSPORT AND SLIP
+        if (!empty($_FILES['slip']['name'])) {
+            $uploadPath = '../uploads/'; // Specify your upload directory
+            $uploadedFile = $_FILES['slip'];
+            $filename = $uploadedFile['name'];
+            $basename = basename($filename);
+            $extention = pathinfo($basename, PATHINFO_EXTENSION);
+
+            $rename = hash("SHA256", time() . rand(12345, 67890)) . '.' . $extention;
+            $tmpName =  $uploadedFile['tmp_name'];
+            $img = Intervention\Image\ImageManagerStatic::make($tmpName);
+            $img->save($uploadPath . $rename);
+            $pathSave = "uploads/$rename";
+            $imageUpload = [
+                "paymentSlip" => $pathSave,
+            ];
+
+            $data = array_merge($data, $imageUpload);
+        }
+
 
         echo json_encode($model->applyForLoan($email, $phone, $fullname, $data));
     }
@@ -120,17 +142,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fullname = CommonFunctions::clean($rest['fullname']);
         $phone = CommonFunctions::clean($rest['phone']);
         $email = CommonFunctions::clean($rest['email']);
-        $letter = CommonFunctions::clean($jsonData->letter); 
+        $letter = CommonFunctions::clean($jsonData->letter);
 
         $data = [
-            "lid"=> CommonFunctions::generateUniqueID(),
+            "lid" => CommonFunctions::generateUniqueID(),
             "userid" => $userid,
             "dletter" => $letter,
             "dstate" => "Letter of indetedness",
             "ddate" => CommonFunctions::getDateTime(1),
         ];
         echo json_encode($model->letterRequest($email, $fullname, $data));
-
     }
 }
 
@@ -179,36 +200,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     }
 
     //TODO: UPDATE NEXT OF KIN
-    if (isset($jsonData->Message) and $jsonData->Message == 'nextOfKin') {
+    // if (isset($jsonData->Message) and $jsonData->Message == 'nextOfKin') {
 
-        $fullname = CommonFunctions::clean($jsonData->fullname);
-        $phone = CommonFunctions::clean($jsonData->phone);
-        $gender = CommonFunctions::clean($jsonData->gender);
-        $relationship = CommonFunctions::clean($jsonData->relationship);
-        $userid = CommonFunctions::clean($jsonData->userid);
+    //     $fullname = CommonFunctions::clean($jsonData->fullname);
+    //     $phone = CommonFunctions::clean($jsonData->phone);
+    //     $gender = CommonFunctions::clean($jsonData->gender);
+    //     $relationship = CommonFunctions::clean($jsonData->relationship);
+    //     $userid = CommonFunctions::clean($jsonData->userid);
 
-        $data = [
-            "nextOfKinName" => $fullname,
-            "nextOfKinGender" => $gender,
-            "nextOfKinRelationship" => $relationship,
-            "nextOfKinPhone" => $phone,
-        ];
+    //     $data = [
+    //         "nextOfKinName" => $fullname,
+    //         "nextOfKinGender" => $gender,
+    //         "nextOfKinRelationship" => $relationship,
+    //         "nextOfKinPhone" => $phone,
+    //     ];
 
-        echo json_encode($model->updatePersonalDetails($data, ["userid" => $userid]));
-    }
+    //     echo json_encode($model->updatePersonalDetails($data, ["userid" => $userid]));
+    // }
 
     //TODO: UPDATE ACCOUNT DETAILS
     if (isset($jsonData->Message) and $jsonData->Message == 'accountDetails') {
 
-        $accountName = CommonFunctions::clean($jsonData->accountName);
-        $accountNumber = CommonFunctions::clean($jsonData->accountNumber);
-        $bankName = CommonFunctions::clean($jsonData->bankName);
 
-        $data = [
-            "accountName" => $accountName,
-            "accountNumber" => $accountNumber,
-            "bankName" => $bankName,
-        ];
 
         echo json_encode($model->updatePersonalDetails($data, ["userid" => $userid]));
     }

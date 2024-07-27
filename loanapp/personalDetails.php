@@ -32,6 +32,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // $oldSlip = CommonFunctions::clean($_POST['oldSlip']);
         // $oldPassport = CommonFunctions::clean($_POST['oldPassport']);
+        $accountName = CommonFunctions::clean($_POST['accountName']);
+        $accountNumber = CommonFunctions::clean($_POST['accountNumber']);
+        $bankName = CommonFunctions::clean($_POST['bankName']);
+
 
 
         $data = [
@@ -42,31 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "yearEmployed" => $year,
             "ddepartment" => $department,
             "ddesignation" => $designation,
+            "accountName" => $accountName,
+            "accountNumber" => $accountNumber,
+            "bankName" => $bankName,
             "residentAddress" => $resident
 
             // "dpassport" => $passport
         ];
-
-
-        //TODO: PASSPORT AND SLIP
-        if (!empty($_FILES['slip']['name'])) {
-            $uploadPath = '../uploads/'; // Specify your upload directory
-            $uploadedFile = $_FILES['slip'];
-            $filename = $uploadedFile['name'];
-            $basename = basename($filename);
-            $extention = pathinfo($basename, PATHINFO_EXTENSION);
-
-            $rename = hash("SHA256", time() . rand(12345, 67890)) . '.' . $extention;
-            $tmpName =  $uploadedFile['tmp_name'];
-            $img = Intervention\Image\ImageManagerStatic::make($tmpName);
-            $img->save($uploadPath . $rename);
-            $pathSave = "uploads/$rename";
-            $imageUpload = [
-                "paymentSlip" => $pathSave,
-            ];
-
-            $data = array_merge($data, $imageUpload);
-        }
 
 
 
@@ -92,5 +78,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
         echo json_encode($model->updatePersonalDetails($data, ["userid" => $userid]));
+    }
+
+
+
+    //TODO: APPLY FOR LOAN
+    if (isset($_POST['Message']) and $_POST['Message'] == 'applyForLoan') {
+
+
+        $userid = CommonFunctions::clean($rest['userid']);
+        $fullname = CommonFunctions::clean($rest['fullname']);
+        $phone = CommonFunctions::clean($rest['phone']);
+        $email = CommonFunctions::clean($rest['email']);
+
+        $gross = CommonFunctions::clean($_POST['gross']);
+        $net = CommonFunctions::clean($_POST['net']);
+        $amountApply = CommonFunctions::clean($_POST['amountApply']);
+
+        $level = CommonFunctions::clean($_POST['level']);
+        $amountSpread = CommonFunctions::clean($_POST['amountSpread']);
+        $spreadPeriod = CommonFunctions::clean($_POST['month']);
+        $amountDeducted = CommonFunctions::clean($_POST['amountDeducted']);
+        $totalInterest = CommonFunctions::clean($_POST['totalInterest']);
+        $available = CommonFunctions::clean($_POST['available']);
+        $StartDate = CommonFunctions::clean($_POST['startDate']);
+
+
+        $totalBalance = ($amountApply + $totalInterest);
+
+        $data = [
+            "rid" => CommonFunctions::generateUniqueID(),
+            "userid" => $userid,
+            "grossMonthly" => $gross,
+            "netMonthly" => $net,
+            "amountApply" => $amountApply,
+            "dlevel" => $level,
+            "amountRequest" => $amountApply,
+            "amountSpread" => $amountSpread,
+            "spreadPeriod" => $spreadPeriod,
+            "amountDeducted" => $amountDeducted,
+            "totalInterest" => $totalInterest,
+            "totalPayment" => '0.00',
+            "totalBalance" => $totalBalance,
+            "deductionDate" => $StartDate,
+            "amountAvailable" => $amountSpread,
+            "ddate" => CommonFunctions::getDateTime(1),
+            "searchDate" => date("Y-m-d"),
+            "processingFee" => '5000',
+            "approveDate" => CommonFunctions::getDateTime(1),
+        ];
+
+
+        //TODO: PASSPORT AND SLIP
+        if (!empty($_FILES['slip']['name'])) {
+            $uploadPath = '../uploads/'; // Specify your upload directory
+            $uploadedFile = $_FILES['slip'];
+            $filename = $uploadedFile['name'];
+            $basename = basename($filename);
+            $extention = pathinfo($basename, PATHINFO_EXTENSION);
+
+            $rename = hash("SHA256", time() . rand(12345, 67890)) . '.' . $extention;
+            $tmpName =  $uploadedFile['tmp_name'];
+            $img = Intervention\Image\ImageManagerStatic::make($tmpName);
+            $img->save($uploadPath . $rename);
+            $pathSave = "uploads/$rename";
+            $imageUpload = [
+                "paymentSlip" => $pathSave,
+            ];
+
+            $data = array_merge($data, $imageUpload);
+        }
+
+
+        echo json_encode($model->applyForLoan($email, $phone, $fullname, $data));
     }
 }

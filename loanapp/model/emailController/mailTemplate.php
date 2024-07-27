@@ -2,85 +2,67 @@
 <html lang="en">
 
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="https://samogoza.com/img/samogoza.png" type="image/x-icon">
-  <link rel="shortcut icon" href="https://samogoza.com/img/samogoza.png" type="image/x-icon">
-  <title>Samogoza LTD</title>
-  <link href="https://fonts.googleapis.com/css?family=Work+Sans:100,200,300,400,500,600,700,800,900" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
-  <style type="text/css">
-    body {
-      width: 650px;
-      font-family: work-Sans, sans-serif;
-      background-color: #002E5B;
-      display: block;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://samogoza.com/img/samogoza.png" type="image/x-icon">
+    <link rel="shortcut icon" href="https://samogoza.com/img/samogoza.png" type="image/x-icon">
+    <title>Samogoza Loan Service</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
 
-    a {
-      text-decoration: none;
-    }
+        .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
 
-    span {
-      font-size: 14px;
-    }
+        .email-header {
+            text-align: center;
+            padding: 20px;
+            background-color: #002E5B;
+            color: white;
+        }
 
-    p {
-      font-size: 13px;
-      line-height: 1.7;
-      letter-spacing: 0.7px;
-      margin-top: 0;
-    }
+        .email-content {
+            padding: 20px;
+            line-height: 1.6;
+            color: #333333;
+        }
 
-    .text-center {
-      text-align: center
-    }
-    /* *{
-      color: #fff !important;
-    } */
-  </style>
+        .email-footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #777777;
+        }
+
+        .email-footer a {
+            color: #0073e6;
+            text-decoration: none;
+        }
+    </style>
 </head>
 
-<body style="margin: 30px auto;">
-  <table style="width: 100%; padding:20px">
-    <tbody>
-      <tr>
-        <td>
-          <table style="background-color: #f6f7fb; width: 100%">
-            <tbody>
-              <tr>
-                <td>
-                  <table style="width: 650px; margin: 0 auto; background-color: #fff; border-radius: 8px">
-                    <tbody>
-                      <tr>
-                        <td>
-                          <center>
-                            <img src="https://samogoza.com/img/samogoza.png" style="width:200px ;" alt="">
-                          </center>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 30px">
-                          {TEMPLATE}
-                          <hr>
-                          <center>
-                            <p style="margin-bottom: 0">Samogoza LTD</p>
-                          </center>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <img src="https://samogoza.com/img/samogoza.png" alt="Logo" style="max-width: 150px;">
+        </div>
+        <div class="email-content">
+            {TEMPLATE}
+        </div>
+        <div class="email-footer">
+            <p>No. 67. Rivers State University shopping complex,<br> Nkpolu Oroworukwo Mile 3. Port Harcourt.</p>
+            <p>0805 105 2273, 0901 3822 9859</p>
+            <p>&copy; <?= date("Y") ?> Samogoza Loan Service. All rights reserved.</p>
+        </div>
+    </div>
 </body>
 
 </html>

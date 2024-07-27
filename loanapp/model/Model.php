@@ -358,7 +358,7 @@ class Model
 
                     $template = __DIR__ . "/emailController/mailTemplate.php";
                     EmailSender::sendEmail($email, $name, $subject, $template, $msg);
-                    CommonFunctions::sendMail($msg, $email, $subject);
+                    // CommonFunctions::sendMail($msg, $email, $subject);
 
                     $token = $this->jwt->generateToken([
                         'userid' => $data["userid"],
@@ -444,6 +444,7 @@ class Model
                 ->where(['rid' => $rid])
                 ->get('*', false);
             $data = [
+                "rid" => $row['rid'],
                 "dduration" => $row['dduration'],
                 "amountApply" => $row['amountApply'],
                 "amountRequest" => $row['amountRequest'],
@@ -471,8 +472,16 @@ class Model
 
             $template = __DIR__ . "/emailController/mailTemplate.php";
             EmailSender::sendEmail($email, $name, $subject, $template, $msg);
+            //TODO: SEND email TO ADMIN
 
-            // CommonFunctions::sendMail($msg, $email, $subject);
+            $email = 'youngelefiku@gmail.com';
+            $subject = "LOAN REQUEST";
+            $msg = "
+            <b>Dear Samogoza Loan Service,</b>
+            <P><b>$name</b> request for a loan of <b>$amount</b>. 
+            kindly login to the admin protal to process the request.</P>
+            ";
+            EmailSender::sendEmail($email, "Samogoza", $subject, $template, $msg);
         } else {
             http_response_code(400);
             $data = [
@@ -541,6 +550,22 @@ class Model
                     "accountStatus" => $user["account_status"],
                     "status" => $user["dstatus"],
                 ];
+
+                $subject = "Personal detail submitted";
+                $name = $user["dfirstname"];
+                $email = 'youngelefiku@gmail.com';
+                $msg = "
+                <b>Dear Samogoza Loan Service,</b>
+                <P><b>$name</b> has submitted personal details, 
+                kindly login to the admin panel to approve or cancel the details.</P>                    
+                ";
+
+                // $textMessage = "$name has requested for a loan of $amount";
+                // CommonFunctions::sendMessage("", $textMessage);
+
+
+                $template = __DIR__ . "/emailController/mailTemplate.php";
+                EmailSender::sendEmail($email, $name, $subject, $template, $msg);
             } else {
                 http_response_code(400);
                 $result = [
@@ -597,11 +622,7 @@ class Model
                 ];
             }
         } else {
-            http_response_code(400);
-            $result = [
-                'ACCESS_CODE' => 'DENIED',
-                'msg' => "Sorry, we\'re unable to fetch data."
-            ];
+            $result = [];
         }
 
         return $result;
