@@ -125,6 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "ddate" => CommonFunctions::getDateTime(1),
             "searchDate" => date("Y-m-d"),
             "processingFee" => '5000',
+            "drate"=> 6,
             "approveDate" => CommonFunctions::getDateTime(1),
         ];
 

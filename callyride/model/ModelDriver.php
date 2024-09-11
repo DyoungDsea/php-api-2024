@@ -36,8 +36,12 @@ class ModelDriver
         if ($user) {
             $hashedPassword = md5($password);
             if ($hashedPassword  === $user['password']) {
+
+                // print_r($user);
+                // die;
+
                 include './result.php';
-                
+
                 if ($user["status"] == 'pending') {
                     $name = $user["driver_name"];
                     $driver_id = $user["driver_id"];
@@ -87,8 +91,6 @@ class ModelDriver
 
         return $data;
     }
-
-
 
     //? new registration
     public function createNewDriver(string $email, string $phone, array $data)
@@ -167,18 +169,19 @@ class ModelDriver
             ->get('*', false);
 
         if ($user) {
-            include './result.php';
-            
+
             $this->helper->update("manage_drivers", ["status" => 'active'], ["driver_id" => $driver_id]);
+            $user = $this->helper->getSingleRecord("manage_drivers", "WHERE driver_id='$driver_id'");
+            include './result.php';
         } else {
             http_response_code(400);
-            $data = [
+            $result = [
                 'ACCESS_CODE' => 'DENIED',
                 'msg' => "Sorry, invalid code provided."
             ];
         }
 
-        return $data;
+        return $result;
     }
 
     public function forgotPassword(string $email)
@@ -467,22 +470,8 @@ class ModelDriver
                 $userid = $clause['driver_id'];
                 $user = $this->helper->getSingleRecord('manage_drivers', "WHERE driver_id = '$userid'");
 
-                if (!empty($user)) {
-                    $result = [
-                        "driverId" => $user["driver_id"],
-                        "driverName" => $user["driver_name"],
-                        "phoneNumber" => $user["phone_number"],
-                        "emailAddress" => $user["email_address"],
-                        "contactAddress" => empty($user["daddress"]) ? "" : $user["daddress"],
-                        "licenseNumber" => empty($user["licenseNumber"]) ? "" : $user["licenseNumber"],
-                        "frontView" => empty($user["frontView"]) ? "" : $user["frontView"],
-                        "lastupdate" => empty($user["lastupdate"]) ? "" : $user["lastupdate"],
-                        "walletBalance" => $user["wallet_balance"],
-                        "carVerification" => $user["carVerification"],
-                        "driverLicenceFront" => !empty($user["driverLicenceFront"]) ? $user["driverLicenceFront"] : "",
-                        "engineView" => !empty($user["engineView"]) ? $user["engineView"] : ""
-
-                    ];
+                if (!empty($user)) {                    
+                include './result.php';
                 }
             } else {
                 http_response_code(400);
@@ -531,22 +520,10 @@ class ModelDriver
             $userid = $clause['driver_id'];
             $user = $this->helper->getSingleRecord('manage_drivers', "WHERE driver_id = '$userid'");
 
-            if (!empty($user)) {
-                $result = [
-                    "driverId" => $user["driver_id"],
-                    "driverName" => $user["driver_name"],
-                    "phoneNumber" => $user["phone_number"],
-                    "emailAddress" => $user["email_address"],
-                    "contactAddress" => empty($user["daddress"]) ? "" : $user["daddress"],
-                    "licenseNumber" => empty($user["licenseNumber"]) ? "" : $user["licenseNumber"],
-                    "frontView" => empty($user["frontView"]) ? "" : $user["frontView"],
-                    "lastupdate" => empty($user["lastupdate"]) ? "" : $user["lastupdate"],
-                    "walletBalance" => $user["wallet_balance"],
-                    "carVerification" => $user["carVerification"],
-                    "driverLicenceFront" => !empty($user["driverLicenceFront"]) ? $user["driverLicenceFront"] : "",
-                    "engineView" => !empty($user["engineView"]) ? $user["engineView"] : ""
+            
 
-                ];
+            if (!empty($user)) {
+                include './result.php';
             }
         } else {
             http_response_code(400);
@@ -663,6 +640,34 @@ class ModelDriver
             ];
         }
 
+        return $result;
+    }
+
+    public function resendToken(string $userid)
+    {
+        $user = $this->query->read("manage_drivers")
+            ->where(['driver_id' => $userid])
+            ->get("*", false);
+
+        if (!empty($user)) {
+            $name = $user["driver_name"];
+            $driver_id = $user["driver_id"];
+            $email = $user["email_address"];
+            $pin = rand(1234, 5678);
+            //TODO: SEND PIN TO EMAIL & SMS
+            $subject = "Verification | CallyRiver";
+            $msg = "
+                <b>Dear $name,</b>  welcome to CallyRiver.
+                <P>Use this code <b>$pin</b> to verify your account.</P>                    
+                ";
+            CommonFunctions::sendMail($msg, $email, $subject);
+            $this->helper->update("manage_drivers", ["vcode" => $pin], ["driver_id" => $driver_id]);
+            // http_response_code(401);
+            $result = [
+                'ACCESS_CODE' => 'SUCCESS',
+                'msg' => "Verification code has been sent to your email address."
+            ];
+        }
         return $result;
     }
 

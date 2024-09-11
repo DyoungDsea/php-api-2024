@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
                 "driver_photo" => NULL,
                 "plateNumber" => NULL,
                 "driver_status" => 'pending'
-            ]; 
+            ];
         }
 
         echo json_encode($modelDriver->updateChanges($data, ["id" => $id]));
@@ -160,12 +160,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         echo json_encode($modelDriver->updateDriver($data, ["driver_id" => $userid]));
     }
 
+    //TODO: UPDATE BASIC INFORMATION
+    if (isset($jsonData->Message) and $jsonData->Message == 'basicDriverInformation') {
+
+        $gender = CommonFunctions::clean($jsonData->gender);
+        $state = CommonFunctions::clean($jsonData->state);
+        $lga = CommonFunctions::clean($jsonData->lga);
+        $city = CommonFunctions::clean($jsonData->city);
+        $address = htmlentities($jsonData->address);
+        $nin = CommonFunctions::clean($jsonData->nin);
+        $userid = CommonFunctions::clean($jsonData->userid);
+
+        $data = [
+            "dgender" => $gender,
+            "nin" => $nin,
+            "state" => $state,
+            "dlga" => $lga,
+            "dcity" => $city,
+            "daddress" => $address
+        ];
+
+        echo json_encode($modelDriver->updateVehicleInfo($data, ["driver_id" => $userid]));
+    }
+
+
     //TODO: UPDATE VEHICLE DETAILS
     if (isset($jsonData->Message) and $jsonData->Message == 'vehicleDetails') {
 
         $carName = CommonFunctions::clean($jsonData->carName);
-        $license = CommonFunctions::clean($jsonData->license);
-        $nin = CommonFunctions::clean($jsonData->nin);
         $plateNo = CommonFunctions::clean($jsonData->plateNo);
         $color = CommonFunctions::clean($jsonData->color);
         $enginNo = CommonFunctions::clean($jsonData->enginNo);
@@ -174,22 +196,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
 
         $data = [
             "car_type" => $carName,
-            "nin" => $nin,
             "carDesc" => $desc,
             "carColor" => $color,
             "plateNumber" => $plateNo,
-            "engineNumber" => $enginNo,
-            "licenseNumber" => $license
+            "engineNumber" => $enginNo
         ];
 
         echo json_encode($modelDriver->updateVehicleInfo($data, ["driver_id" => $userid]));
     }
 
-     //TODO: VERIFY ACCOUNT
-     if (isset($jsonData->Message) and $jsonData->Message == 'verifyAccount') {
+    //TODO: VERIFY ACCOUNT
+    if (isset($jsonData->Message) and $jsonData->Message == 'verifyAccount') {
         $pin = CommonFunctions::clean($jsonData->pin);
         $driverid = CommonFunctions::clean($jsonData->driverid);
         echo json_encode($modelDriver->verifyAccount($driverid, $pin));
-        
     }
 }

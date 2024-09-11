@@ -41,84 +41,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     //TODO: APPLY FOR LOAN
-    if (isset($jsonData->Message) and $jsonData->Message == 'applyForLoan') {
-        //TODO VALIDATE TOKEN BEFORE GRANTING ACCESS TO ANY DATA
-        $token =  CommonFunctions::getBearerToken();
-        $rest =  $jwtHandler->validateToken($token);
-        if ($rest == false) {
-            echo json_encode(array('status' => 'error', 'message' => 'Invalid Token'));
-            die;
-        }
+    // if (isset($jsonData->Message) and $jsonData->Message == 'applyForLoan') {
+    //     //TODO VALIDATE TOKEN BEFORE GRANTING ACCESS TO ANY DATA
+    //     $token =  CommonFunctions::getBearerToken();
+    //     $rest =  $jwtHandler->validateToken($token);
+    //     if ($rest == false) {
+    //         echo json_encode(array('status' => 'error', 'message' => 'Invalid Token'));
+    //         die;
+    //     }
 
 
-        $userid = CommonFunctions::clean($rest['userid']);
-        $fullname = CommonFunctions::clean($rest['fullname']);
-        $phone = CommonFunctions::clean($rest['phone']);
-        $email = CommonFunctions::clean($rest['email']);
+    //     $userid = CommonFunctions::clean($rest['userid']);
+    //     $fullname = CommonFunctions::clean($rest['fullname']);
+    //     $phone = CommonFunctions::clean($rest['phone']);
+    //     $email = CommonFunctions::clean($rest['email']);
 
-        $gross = CommonFunctions::clean($jsonData->gross);
-        $net = CommonFunctions::clean($jsonData->net);
-        $amountApply = CommonFunctions::clean($jsonData->amountApply);
+    //     $gross = CommonFunctions::clean($jsonData->gross);
+    //     $net = CommonFunctions::clean($jsonData->net);
+    //     $amountApply = CommonFunctions::clean($jsonData->amountApply);
 
-        $level = CommonFunctions::clean($jsonData->level);
-        $amountSpread = CommonFunctions::clean($jsonData->amountSpread);
-        $spreadPeriod = CommonFunctions::clean($jsonData->month);
-        $amountDeducted = CommonFunctions::clean($jsonData->amountDeducted);
-        $totalInterest = CommonFunctions::clean($jsonData->totalInterest);
-        $available = CommonFunctions::clean($jsonData->available);
-        $StartDate = CommonFunctions::clean($jsonData->startDate);
-
-
+    //     $level = CommonFunctions::clean($jsonData->level);
+    //     $amountSpread = CommonFunctions::clean($jsonData->amountSpread);
+    //     $spreadPeriod = CommonFunctions::clean($jsonData->month);
+    //     $amountDeducted = CommonFunctions::clean($jsonData->amountDeducted);
+    //     $totalInterest = CommonFunctions::clean($jsonData->totalInterest);
+    //     $available = CommonFunctions::clean($jsonData->available);
+    //     $StartDate = CommonFunctions::clean($jsonData->startDate);
 
 
-        $totalBalance = ($amountApply + $totalInterest);
 
-        $data = [
-            "rid" => CommonFunctions::generateUniqueID(),
-            "userid" => $userid,
-            "grossMonthly" => $gross,
-            "netMonthly" => $net,
-            "amountApply" => $amountApply,
-            "dlevel" => $level,
-            "amountRequest" => $amountApply,
-            "amountSpread" => $amountSpread,
-            "spreadPeriod" => $spreadPeriod,
-            "amountDeducted" => $amountDeducted,
-            "totalInterest" => $totalInterest,
-            "totalPayment" => '0.00',
-            "totalBalance" => $totalBalance,
-            "deductionDate" => $StartDate,
-            "amountAvailable" => $amountSpread,
-            "ddate" => CommonFunctions::getDateTime(1),
-            "searchDate" => date("Y-m-d"),
-            "processingFee" => '5000',
-            "approveDate" => CommonFunctions::getDateTime(1),
-        ]; 
+
+    //     $totalBalance = ($amountApply + $totalInterest);
+
+    //     $data = [
+    //         "rid" => CommonFunctions::generateUniqueID(),
+    //         "userid" => $userid,
+    //         "grossMonthly" => $gross,
+    //         "netMonthly" => $net,
+    //         "amountApply" => $amountApply,
+    //         "dlevel" => $level,
+    //         "amountRequest" => $amountApply,
+    //         "amountSpread" => $amountSpread,
+    //         "spreadPeriod" => $spreadPeriod,
+    //         "amountDeducted" => $amountDeducted,
+    //         "totalInterest" => $totalInterest,
+    //         "totalPayment" => '0.00',
+    //         "totalBalance" => $totalBalance,
+    //         "deductionDate" => $StartDate,
+    //         "amountAvailable" => $amountSpread,
+    //         "ddate" => CommonFunctions::getDateTime(1),
+    //         "searchDate" => date("Y-m-d"),
+    //         "processingFee" => '5000',
+    //         "approveDate" => CommonFunctions::getDateTime(1),
+    //     ]; 
 
         
-        //TODO: PASSPORT AND SLIP
-        if (!empty($_FILES['slip']['name'])) {
-            $uploadPath = '../uploads/'; // Specify your upload directory
-            $uploadedFile = $_FILES['slip'];
-            $filename = $uploadedFile['name'];
-            $basename = basename($filename);
-            $extention = pathinfo($basename, PATHINFO_EXTENSION);
+    //     //TODO: PASSPORT AND SLIP
+    //     if (!empty($_FILES['slip']['name'])) {
+    //         $uploadPath = '../uploads/'; // Specify your upload directory
+    //         $uploadedFile = $_FILES['slip'];
+    //         $filename = $uploadedFile['name'];
+    //         $basename = basename($filename);
+    //         $extention = pathinfo($basename, PATHINFO_EXTENSION);
 
-            $rename = hash("SHA256", time() . rand(12345, 67890)) . '.' . $extention;
-            $tmpName =  $uploadedFile['tmp_name'];
-            $img = Intervention\Image\ImageManagerStatic::make($tmpName);
-            $img->save($uploadPath . $rename);
-            $pathSave = "uploads/$rename";
-            $imageUpload = [
-                "paymentSlip" => $pathSave,
-            ];
+    //         $rename = hash("SHA256", time() . rand(12345, 67890)) . '.' . $extention;
+    //         $tmpName =  $uploadedFile['tmp_name'];
+    //         $img = Intervention\Image\ImageManagerStatic::make($tmpName);
+    //         $img->save($uploadPath . $rename);
+    //         $pathSave = "uploads/$rename";
+    //         $imageUpload = [
+    //             "paymentSlip" => $pathSave,
+    //         ];
 
-            $data = array_merge($data, $imageUpload);
-        }
+    //         $data = array_merge($data, $imageUpload);
+    //     }
 
 
-        echo json_encode($model->applyForLoan($email, $phone, $fullname, $data));
-    }
+    //     echo json_encode($model->applyForLoan($email, $phone, $fullname, $data));
+    // }
 
     //TODO: lOGIN
     if (isset($jsonData->Message) and $jsonData->Message == 'login') {

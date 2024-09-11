@@ -36,16 +36,20 @@ class Model
         if ($user) {
             $hashedPassword = md5($password);
             if ($hashedPassword  === $user['pword']) {
-                $data = [
+                $data =  [
                     "customerId" => $user["customer_id"],
                     "customerName" => $user["customer_name"],
                     "phoneNumber" => $user["phone_number"],
                     "emailAddress" => $user["email_address"],
                     "contactAddress" => $user["contact_address"],
+                    "dob" => $user["ddob"],
+                    "gender" => $user["dgender"],
+                    "nin" => $user["dnin"],
+                    "state" => $user["dstate"],
+                    "city" => $user["dcity"],
                     "avatar" => $user["avatar"],
-                    "dtime" => CommonFunctions::formatDate($user["dtime"]),
+                    "dtime" => $user["dtime"],
                     "walletBalance" => $user["wallet_balance"]
-
                 ];
             } else {
                 http_response_code(400);
@@ -162,16 +166,20 @@ class Model
                     $user = $this->query->read('manage_customers')
                         ->where(['email_address' => $email, "customer_id" => $customer_id])
                         ->get('*', false);
-                    $result = [
+                    $result =  [
                         "customerId" => $user["customer_id"],
                         "customerName" => $user["customer_name"],
                         "phoneNumber" => $user["phone_number"],
                         "emailAddress" => $user["email_address"],
                         "contactAddress" => $user["contact_address"],
+                        "dob" => $user["ddob"],
+                        "gender" => $user["dgender"],
+                        "nin" => $user["dnin"],
+                        "state" => $user["dstate"],
+                        "city" => $user["dcity"],
                         "avatar" => $user["avatar"],
                         "dtime" => $user["dtime"],
                         "walletBalance" => $user["wallet_balance"]
-
                     ];
                 }
             } else {
@@ -277,6 +285,11 @@ class Model
                         "phoneNumber" => $user["phone_number"],
                         "emailAddress" => $user["email_address"],
                         "contactAddress" => $user["contact_address"],
+                        "dob" => $user["ddob"],
+                        "gender" => $user["dgender"],
+                        "nin" => $user["dnin"],
+                        "state" => $user["dstate"],
+                        "city" => $user["dcity"],
                         "avatar" => $user["avatar"],
                         "dtime" => $user["dtime"],
                         "walletBalance" => $user["wallet_balance"]
@@ -572,12 +585,20 @@ class Model
                 "pickupAddress" => $row['pickup_address'],
                 "dropoffAddress" => $row['dropoff_address'],
                 "pickupLat" => $row['pickup_lat'],
-                "pickupLng" => $row['pickup_long'], 
+                "pickupLng" => $row['pickup_long'],
                 "dropoffLat" => $row['dropoff_lat'],
-                "dropoffLng" => $row['dropoff_long'], 
+                "dropoffLng" => $row['dropoff_long'],
 
             ];
         }
         return $res;
+    }
+
+    public function deleteAccount(string $userid): array
+    {
+        $this->helper->update("manage_customers", ["deleteAccount" => 'yes'], ["customer_id" => $userid]);
+        return [
+            "success" => "Success"
+        ];
     }
 }

@@ -6,9 +6,54 @@ require_once './require.php';
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 
+    //TODO: fech about us info
+    if (isset($_GET['Message']) and $_GET['Message'] == 'support') {
+        $user = $helper->getSingleRecord('dcontact', "WHERE id = 1");
+        echo json_encode([
+            "support" => html_entity_decode($user["text"])
+        ]);
+    }
+
+    //TODO: fech about us info
+    if (isset($_GET['Message']) and $_GET['Message'] == 'aboutUs') {
+        $user = $helper->getSingleRecord('dabout', "WHERE id = 2");
+        echo json_encode([
+            "aboutUs" => html_entity_decode($user["text"])
+        ]);
+    }
+
+    if (isset($_GET['Message']) and $_GET['Message'] == 'getUserRecord') {
+        $userid = CommonFunctions::clean($_GET['userid']);
+        $user = $helper->getSingleRecord('manage_customers', "WHERE customer_id = '$userid'");
+
+        if (!empty($user)) {
+            $result = [
+                "customerId" => $user["customer_id"],
+                "customerName" => $user["customer_name"],
+                "phoneNumber" => $user["phone_number"],
+                "emailAddress" => $user["email_address"],
+                "contactAddress" => $user["contact_address"],
+                "dob" => $user["ddob"],
+                "gender" => $user["dgender"],
+                "nin" => $user["dnin"],
+                "state" => $user["dstate"],
+                "city" => $user["dcity"],
+                "avatar" => $user["avatar"],
+                "dtime" => $user["dtime"],
+                "walletBalance" => $user["wallet_balance"]
+            ];
+            echo json_encode($result);
+        }
+    }
+    //TODO: fech all route
+    if (isset($_GET['Message']) and $_GET['Message'] == 'deleteAccount') {
+        $userid = CommonFunctions::clean($_GET['userid']);
+        echo json_encode($model->deleteAccount($userid));
+    }
+
     //TODO: fech all route
     if (isset($_GET['Message']) and $_GET['Message'] == 'myRoute') {
-        $userid = CommonFunctions::clean($_GET['userid']); 
+        $userid = CommonFunctions::clean($_GET['userid']);
         echo json_encode($model->myRoute($userid));
     }
 
@@ -123,5 +168,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     //TODO: fech user job done
     if (isset($_GET['Message']) and $_GET['Message'] == 'reasons') {
         echo json_encode($modelDriver->fetchReason('driver'));
+    }
+
+    if (isset($_GET['Message']) and $_GET['Message'] == 'resendDriverToken') {
+        $userid = CommonFunctions::clean($_GET['userid']);
+        echo json_encode($modelDriver->resendToken($userid));
     }
 }

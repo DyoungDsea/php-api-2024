@@ -1,0 +1,6 @@
+{
+    "require": {
+        "intervention/image": "^2",
+        "firebase/php-jwt": "^6.10"
+    }
+}

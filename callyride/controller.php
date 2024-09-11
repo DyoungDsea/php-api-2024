@@ -113,10 +113,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $email = CommonFunctions::clean($jsonData->email);
         $userid = CommonFunctions::clean($jsonData->userid);
 
+        $dob = CommonFunctions::clean($jsonData->dob);
+        $gender = CommonFunctions::clean($jsonData->gender);
+        $nin = CommonFunctions::clean($jsonData->nin);
+        $state = CommonFunctions::clean($jsonData->state);
+        $city = CommonFunctions::clean($jsonData->city);
+        $address = CommonFunctions::clean($jsonData->address);
+
         $data = [
             "customer_name" => $fullname,
             "phone_number" => $phone,
-            "email_address" => $email
+            "email_address" => $email,
+            "ddob" => date("Y-m-d", strtotime($dob)),
+            "dgender" => $gender,
+            "dnin" => $nin,
+            "dstate" => $state,
+            "dcity" => $city,
+            "contact_address" => $address,
         ];
 
         echo json_encode($model->updateUser($data, ["customer_id" => $userid]));
@@ -124,10 +137,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
 
     //TODO: CANCEL BOOKING 
     if (isset($jsonData->Message) and $jsonData->Message == 'cancelBooking') {
-        $userid = CommonFunctions::clean($jsonData->userid); 
-        $transid = CommonFunctions::clean($jsonData->transid);  
-        echo json_encode($model->cancelBooking(["status" => "cancelled"], ["customer_id" => $userid,"transid"=>$transid]));
+        $userid = CommonFunctions::clean($jsonData->userid);
+        $transid = CommonFunctions::clean($jsonData->transid);
+        echo json_encode($model->cancelBooking(["status" => "cancelled"], ["customer_id" => $userid, "transid" => $transid]));
     }
-
-   
 }
